@@ -1,146 +1,129 @@
 "use client";
-import { useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Menu, X, ChevronDown } from "lucide-react";
+import React from "react";
+
+import { Button } from "@/components/ui/Button";
+import { cn } from "@/app/lib/utils";
+import { Menu, X, Search, ArrowRight } from "lucide-react";
 import Link from "next/link";
+// import { Logo } from "@/components/logo";
+import { motion } from "framer-motion";
 
-const Navbar = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { scrollY } = useScroll();
+const menuItems = [
+  { name: "Kenapa Loan", href: "" },
+  { name: "Produk", href: "/resources" },
+  { name: "Blog", href: "/blog" },
 
-  const background = useTransform(
-    scrollY,
-    [0, 100],
-    ["rgba(255,255,255,0)", "rgba(255,255,255,0.95)"]
-  );
+  // { name: "Feedback", href: "/feedback" },
+];
 
-  const border = useTransform(
-    scrollY,
-    [0, 100],
-    ["rgba(255,255,255,0)", "rgba(0,0,0,0.1)"]
-  );
+export const Navbar = () => {
+  const [menuState, setMenuState] = React.useState(false);
+  const [isScrolled, setIsScrolled] = React.useState(false);
 
-  const shadow = useTransform(
-    scrollY,
-    [0, 100],
-    ["0px 0px 0px rgba(0,0,0,0)", "0px 4px 20px rgba(0,0,0,0.08)"]
-  );
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+  
 
   return (
-    <>
-      <motion.nav
-        style={{
-          background,
-          border: `1px solid ${border}`,
-          boxShadow: shadow,
-        }}
-        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 backdrop-blur-sm rounded-full max-w-7xl w-full transition-all duration-300"
+    <header>
+      <nav
+        data-state={menuState && "active"}
+        className="fixed group z-50 w-full px-2"
       >
-        <div className="mx-auto px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-blue-500" />
-            <h1 className="font-bold text-lg">Loan</h1>
-          </div>
-
-          <ul className="hidden md:flex space-x-8 text-base font-medium text-gray-700">
-            <li>
-              <a className="hover:text-blue-500 transition cursor-pointer">
-                Kenapa Loan
-              </a>
-            </li>
-            <li>
-              <a className="hover:text-blue-500 transition cursor-pointer">
-                Produk
-              </a>
-            </li>
-            <li>
-              <a className="hover:text-blue-500 transition cursor-pointer">
-                Blog
-              </a>
-            </li>
-          </ul>
-
-          <div className="hidden md:flex items-center gap-4">
-            <Link href="/">
-              <motion.div
-                className="flex items-center justify-between bg-[#0C0A3E] text-white px-1.5 py-1.5 rounded-full font-medium shadow-lg hover:bg-[#0C0A3E]/80 transition-colors"
-              >
-                <span className="mx-2 text-sm">Daftar Sekarang</span>
-                <motion.div
-                  className="flex items-center justify-center w-8 h-8 bg-[#0081FF] rounded-full"
-                  animate={{ x: [0, 3, 0] }}
-                  transition={{
-                    repeat: Infinity,
-                    repeatDelay: 1,
-                  }}
-                >
-                  <ArrowRight size={15} />
-                </motion.div>
-              </motion.div>
-            </Link>
-          </div>
-
-          <button
-            className="md:hidden p-2"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-      </motion.nav>
-
-      {isMobileMenuOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="fixed top-20 z-40 w-full bg-white rounded-2xl shadow-2xl border border-gray-100 md:hidden"
+        <div
+          className={cn(
+            "mx-auto mt-2 max-w-7xl px-6 transition-all duration-300 lg:px-12",
+            isScrolled &&
+              "bg-background/50 max-w-5xl rounded-2xl border backdrop-blur-lg lg:px-5"
+          )}
         >
-          <div className="p-6 space-y-4">
-            <a className="block text-lg font-medium hover:text-blue-500 transition cursor-pointer py-2">
-              Kenapa Loan
-            </a>
-            <a className="block text-lg font-medium hover:text-blue-500 transition cursor-pointer py-2">
-              Produk
-            </a>
-            <a className="block text-lg font-medium hover:text-blue-500 transition cursor-pointer py-2">
-              Blog
-            </a>
-
-            <div className="pt-4 border-t">
+          <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
+            <div className="flex w-full justify-between lg:w-auto">
               <Link
                 href="/"
-                onClick={() => setIsMobileMenuOpen(false)}
+                aria-label="home"
+                className="flex items-center space-x-2"
               >
-                <motion.div
-                  className="relative flex items-center justify-center bg-[#0C0A3E] text-white px-4 py-2 rounded-full font-medium shadow-lg hover:bg-[#0C0A3E]/80 transition-colors"
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <h1 className="text-sm">Daftar Sekarang</h1>
-                  <motion.div className="absolute right-2 flex items-center justify-center w-8 h-8 bg-[#0081FF] rounded-full"
-                   animate={{ x: [0, 3, 0] }}
-                  transition={{
-                    repeat: Infinity,
-                    repeatDelay: 1,
-                  }}
-                  >
-                    <ArrowRight size={15} />
-                  </motion.div>
-                </motion.div>
+                Loan
               </Link>
+
+              <button
+                onClick={() => setMenuState(!menuState)}
+                aria-label={menuState == true ? "Close Menu" : "Open Menu"}
+                className="relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 lg:hidden"
+              >
+                <Menu className="group-data-[state=active]:rotate-180 group-data-[state=active]:scale-0 group-data-[state=active]:opacity-0 m-auto size-6 duration-200" />
+                <X className="group-data-[state=active]:rotate-0 group-data-[state=active]:scale-100 group-data-[state=active]:opacity-100 absolute inset-0 m-auto size-6 -rotate-180 scale-0 opacity-0 duration-200" />
+              </button>
+            </div>
+
+            <div className="absolute inset-0 m-auto hidden size-fit lg:block">
+              <ul className="flex gap-8 text-sm text-gray-500">
+                {menuItems.map((item, index) => (
+                  <li key={index}>
+                    <Link
+                      href={item.href}
+                      className="text-muted-foreground hover:text-accent-foreground block duration-150 hover:text-black"
+                    >
+                      <span>{item.name}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="bg-background group-data-[state=active]:block lg:group-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent">
+              <div className="lg:hidden">
+                <ul className="space-y-6 text-base">
+                  {menuItems.map((item, index) => (
+                    <li key={index}>
+                      <Link
+                        href={item.href}
+                        className="text-muted-foreground hover:text-accent-foreground block duration-150"
+                      >
+                        <span>{item.name}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="w-full lg:w-auto">
+                <Link
+                  href="/register"
+                  onClick={() => setMenuState(false)}
+                  className="block"
+                >
+                  <motion.div
+                    className="relative flex items-center justify-center gap-2 bg-[#0C0A3E] text-white px-3 py-2 rounded-full font-medium shadow-lg hover:bg-[#0C0A3E]/90 hover:shadow-xl transition-all duration-200"
+                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    <span className="text-sm font-semibold">Daftar Sekarang</span>
+                    <motion.div 
+                      className="flex items-center justify-center w-7 h-7 bg-[#0081FF] rounded-full"
+                      animate={{ x: [0, 3, 0] }}
+                      transition={{
+                        repeat: Infinity,
+                        repeatDelay: 1,
+                        duration: 0.6,
+                      }}
+                    >
+                      <ArrowRight size={14} className="text-white" />
+                    </motion.div>
+                  </motion.div>
+                </Link>
+              </div>
             </div>
           </div>
-        </motion.div>
-      )}
-  
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm md:hidden" 
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-    </>
+        </div>
+      </nav>
+    </header>
   );
 };
 
-export default Navbar;
+export default Navbar

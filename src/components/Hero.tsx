@@ -4,6 +4,9 @@ import { useState } from "react"
 import Image from "next/image"
 import Modal from "@/components/ui/Modal"
 import { motion } from "motion/react";
+import { Button } from "./ui/Button";
+import Link from "next/link";
+import { FingerprintIcon } from "lucide-react";
 
 export default function Hero() {
   const [showModal, setShowModal] = useState(false)
@@ -35,15 +38,22 @@ export default function Hero() {
       >
         {/* Buttons */}
       <div className="mt-6 flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex-1 sm:flex-none rounded-2xl bg-gradient-to-b from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white font-bold py-4 px-8 text-lg shadow-[0_4px_0_0_theme(colors.blue.600),0_8px_20px_theme(colors.blue.500/0.25)] hover:shadow-[0_6px_0_0_theme(colors.blue.700),0_10px_25px_theme(colors.blue.500/0.3)] active:shadow-[0_2px_0_0_theme(colors.blue.600),0_4px_10px_theme(colors.blue.500/0.2)] active:translate-y-0.5 transform active:scale-95 transition-all duration-150"
-        >
-          Ajukan Peminjaman
-        </button>
-        
-        <button className="flex-1 sm:flex-none bg-white rounded-2xl py-4 px-8 text-lg font-bold shadow-[0_4px_0_0_theme(colors.gray.300),0_8px_20px_theme(colors.gray.300/0.25)] hover:shadow-[0_6px_0_0_theme(colors.gray.400),0_10px_25px_theme(colors.gray.300/0.3)] hover:bg-gray-50 active:shadow-[0_2px_0_0_theme(colors.gray.300),0_4px_10px_theme(colors.gray.300/0.2)] active:translate-y-0.5 transform active:scale-95 transition-all duration-150">
-        <div className="mr-1 space-x-1 hidden sm:inline-flex justify-center items-center">
+
+      <Link href={"/register"}>
+                    <Button className="rounded-2xl bg-gradient-to-b from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white font-bold py-6 px-8 text-lg shadow-[0_4px_0_0_theme(colors.blue.600),0_8px_20px_theme(colors.blue.500/0.25)] hover:shadow-[0_6px_0_0_theme(colors.blue.700),0_10px_25px_theme(colors.blue.500/0.3)] active:shadow-[0_2px_0_0_theme(colors.blue.600),0_4px_10px_theme(colors.blue.500/0.2)] active:translate-y-0.5 transform active:scale-95 transition-all duration-150">
+                      Daftar Sekarang
+                      <div className="ml-2 space-x-1 hidden sm:inline-flex">
+                        <FingerprintIcon className="w-5 h-5" />
+                      </div>
+                    </Button>
+                  </Link>
+
+                  <Link href={"/"}>
+                    <Button
+                      variant="outline"
+                      className="rounded-2xl py-6 px-8 text-lg font-bold shadow-[0_4px_0_0_theme(colors.gray.300),0_8px_20px_theme(colors.gray.300/0.25)] hover:shadow-[0_6px_0_0_theme(colors.gray.400),0_10px_25px_theme(colors.gray.300/0.3)] hover:bg-gray-50 active:shadow-[0_2px_0_0_theme(colors.gray.300),0_4px_10px_theme(colors.gray.300/0.2)] active:translate-y-0.5 transform active:scale-95 transition-all duration-150 dark:shadow-[0_4px_0_0_theme(colors.gray.600),0_8px_20px_theme(colors.gray.700/0.25)] dark:hover:shadow-[0_6px_0_0_theme(colors.gray.500),0_10px_25px_theme(colors.gray.700/0.3)] dark:hover:bg-gray-100"
+                    >
+                      <div className="mr-1 space-x-1 hidden sm:inline-flex justify-center items-center">
                         <span className="w-5 h-5 text-xs rounded-sm border">
                           ⌘
                         </span>
@@ -51,8 +61,9 @@ export default function Hero() {
                           /
                         </span>
                       </div>
-          Login ke Akun
-        </button>
+                      Login ke Akun
+                    </Button>
+                  </Link>
       </div>
       </motion.div>
 
