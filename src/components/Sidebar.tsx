@@ -52,17 +52,17 @@ export default function Sidebar() {
 
         {/* MONITOR LOAN STATUS */}
         <Link
-          href="/pinjaman"
+          href="/monitor-status-kredit"
           className={`
             flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
-            ${isActive("/pinjaman") 
+            ${isActive("/monitor-status-kredit") 
               ? "bg-blue-50 text-blue-600 font-semibold shadow-sm border border-blue-100" 
               : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
             }
           `}
         >
-          <Book className={`h-5 w-5 ${isActive("/pinjaman") ? "text-blue-600" : "text-gray-500"}`} />
-          <span className="text-sm font-medium">Monitor Status Pinjaman</span>
+          <Book className={`h-5 w-5 ${isActive("/monitor-status-kredit") ? "text-blue-600" : "text-gray-500"}`} />
+          <span className="text-sm font-medium">Monitor Status Kredit</span>
         </Link>
 
         {/* PROFILE */}
