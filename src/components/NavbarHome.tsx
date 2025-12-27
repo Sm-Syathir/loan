@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { cn } from "@/app/lib/utils";
 import { Menu, X, Search, ArrowRight } from "lucide-react";
 import Link from "next/link";
-// import { Logo } from "@/components/logo";
+import Logo from "./Logo";
 import { motion } from "framer-motion";
 
 const menuItems = [
@@ -49,7 +49,7 @@ export const NavbarHome = () => {
                 aria-label="home"
                 className="flex items-center space-x-2"
               >
-                Loan
+                <Logo/>
               </Link>
 
               <button

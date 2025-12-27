@@ -3,26 +3,32 @@
 import Navbar from "@/components/Navbar"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
+interface FormErrors {
+  email?: string;
+  password?: string;
+}
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value
     });
     // Clear error when user starts typing
-    if (errors[name]) {
+    if (errors[name as keyof FormErrors]) {
       setErrors({
         ...errors,
         [name]: ""
@@ -30,8 +36,8 @@ export default function LoginPage() {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
+  const validateForm = (): FormErrors => {
+    const newErrors: FormErrors = {};
 
     if (!formData.email.trim()) newErrors.email = "Email harus diisi";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email tidak valid";
@@ -41,7 +47,7 @@ export default function LoginPage() {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const validationErrors = validateForm();
@@ -81,14 +87,28 @@ export default function LoginPage() {
 
                 {/* PASSWORD */}
                 <div>
-                  <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 rounded-2xl border ${errors.password ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      placeholder="Password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 pr-12 rounded-2xl border ${errors.password ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition-colors"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5 text-black" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-black" />
+                      )}
+                    </button>
+                  </div>
                   {errors.password && <p className="text-red-500 text-sm mt-1 ml-1">{errors.password}</p>}
                 </div>
 
@@ -118,8 +138,18 @@ export default function LoginPage() {
                   </div>
                 </Button>
 
+                <Link href={"/"}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="text-lg w-full py-6 rounded-2xl font-bold shadow-[0_4px_0_0_theme(colors.gray.300),0_8px_20px_theme(colors.gray.300/0.25)] hover:shadow-[0_6px_0_0_theme(colors.gray.400),0_10px_25px_theme(colors.gray.300/0.3)] hover:bg-gray-50 active:shadow-[0_2px_0_0_theme(colors.gray.300),0_4px_10px_theme(colors.gray.300/0.2)] active:translate-y-0.5 transform transition-all duration-150 dark:shadow-[0_4px_0_0_theme(colors.gray.600),0_8px_20px_theme(colors.gray.700/0.25)] dark:hover:shadow-[0_6px_0_0_theme(colors.gray.500),0_10px_25px_theme(colors.gray.700/0.3)] dark:hover:bg-gray-800 cursor-pointer"
+                  >
+                    Back
+                  </Button>
+                </Link>
+
                 {/* Register Link */}
-                <div className="text-center pt-2">
+                <div className="text-center pt-4">
                   <p className="text-gray-600">
                     Belum punya akun?{" "}
                     <Link href="/register" className="text-blue-600 hover:text-blue-800 font-semibold">
@@ -127,9 +157,6 @@ export default function LoginPage() {
                     </Link>
                   </p>
                 </div>
-
-                <Link href={"/"}>
-                </Link>
               </form>
             </div>
           </div>

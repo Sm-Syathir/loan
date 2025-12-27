@@ -3,9 +3,17 @@
 import Navbar from "@/components/Navbar"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
+interface FormErrors {
+  name?: string;
+  email?: string;
+  no_phone?: string;
+  password?: string;
+  userType?: string;
+}
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -15,26 +23,53 @@ export default function RegisterPage() {
     password: "",
     userType: ""
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // For phone number, only allow digits
+    let processedValue = value;
+    if (name === "no_phone") {
+      processedValue = value.replace(/\D/g, "");
+    }
+    
     setFormData({
       ...formData,
-      [name]: value
+      [name]: processedValue
     });
     // Clear error when user starts typing
-    if (errors[name]) {
+    if (errors[name as keyof FormErrors]) {
       setErrors({
         ...errors,
         [name]: ""
       });
     }
   };
+  
+  const handlePhoneKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Allow: backspace, delete, tab, escape, enter
+    if (['Backspace', 'Delete', 'Tab', 'Escape', 'Enter'].includes(e.key)) {
+      return;
+    }
+    // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+    if ((e.key === 'a' || e.key === 'c' || e.key === 'v' || e.key === 'x') && e.ctrlKey) {
+      return;
+    }
+    // Allow: Arrow keys
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) {
+      return;
+    }
+    // Only allow numbers (0-9)
+    if (!/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+    }
+  };
 
-  const validateForm = () => {
-    const newErrors = {};
+  const validateForm = (): FormErrors => {
+    const newErrors: FormErrors = {};
 
     if (!formData.name.trim()) newErrors.name = "Nama harus diisi";
     if (!formData.email.trim()) newErrors.email = "Email harus diisi";
@@ -51,7 +86,7 @@ export default function RegisterPage() {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const validationErrors = validateForm();
@@ -110,6 +145,8 @@ export default function RegisterPage() {
                     placeholder="No phone"
                     value={formData.no_phone}
                     onChange={handleChange}
+                    onKeyDown={handlePhoneKeyDown}
+                    inputMode="numeric"
                     className={`w-full px-4 py-3 rounded-2xl border ${errors.no_phone ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   />
                   {errors.no_phone && <p className="text-red-500 text-sm mt-1 ml-1">{errors.no_phone}</p>}
@@ -117,29 +154,48 @@ export default function RegisterPage() {
 
                 {/* PASSWORD */}
                 <div>
-                  <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 rounded-2xl border ${errors.password ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      placeholder="Password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 pr-12 rounded-2xl border ${errors.password ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition-colors"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5 text-black" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-black" />
+                      )}
+                    </button>
+                  </div>
                   {errors.password && <p className="text-red-500 text-sm mt-1 ml-1">{errors.password}</p>}
                 </div>
 
                 {/* Dropdown Agent/ Nasabah */}
                 <div>
-                  <select
-                    name="userType"
-                    value={formData.userType}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 rounded-2xl border ${errors.userType ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white`}
-                  >
-                    <option value="">Pilih tipe pengguna</option>
-                    <option value="agent">Agent</option>
-                    <option value="nasabah">Nasabah</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      name="userType"
+                      value={formData.userType}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 pr-10 rounded-2xl border ${errors.userType ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white`}
+                    >
+                      <option value="">Pilih tipe pengguna</option>
+                      <option value="agent">Agent</option>
+                      <option value="nasabah">Nasabah</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <ChevronDown className="h-5 w-5 text-black" />
+                    </div>
+                  </div>
                   {errors.userType && <p className="text-red-500 text-sm mt-1 ml-1">{errors.userType}</p>}
                 </div>
 
@@ -162,15 +218,25 @@ export default function RegisterPage() {
                   </div>
                 </Button>
 
-                <Link href={"/login"}>
+                <Link href={"/"}>
                   <Button
                     type="button"
                     variant="outline"
                     className="text-lg w-full py-6 rounded-2xl font-bold shadow-[0_4px_0_0_theme(colors.gray.300),0_8px_20px_theme(colors.gray.300/0.25)] hover:shadow-[0_6px_0_0_theme(colors.gray.400),0_10px_25px_theme(colors.gray.300/0.3)] hover:bg-gray-50 active:shadow-[0_2px_0_0_theme(colors.gray.300),0_4px_10px_theme(colors.gray.300/0.2)] active:translate-y-0.5 transform transition-all duration-150 dark:shadow-[0_4px_0_0_theme(colors.gray.600),0_8px_20px_theme(colors.gray.700/0.25)] dark:hover:shadow-[0_6px_0_0_theme(colors.gray.500),0_10px_25px_theme(colors.gray.700/0.3)] dark:hover:bg-gray-800 cursor-pointer"
                   >
-                    Login
+                    Back
                   </Button>
                 </Link>
+
+                {/* Login Link */}
+                <div className="text-center pt-4">
+                  <p className="text-gray-600">
+                    Sudah punya akun?{" "}
+                    <Link href="/login" className="text-blue-600 hover:text-blue-800 font-semibold">
+                      Login
+                    </Link>
+                  </p>
+                </div>
               </form>
             </div>
           </div>
