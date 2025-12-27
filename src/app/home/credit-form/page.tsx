@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { ArrowRight, ChevronDown, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface FormErrors {
     nik?: string;
@@ -14,21 +15,84 @@ interface FormErrors {
     tempat_lahir?: string;
     tanggal_lahir?: string;
     userChoice?: string;
+     userJaminan?: string;
   }
+
+
 
 export default function CreditForm() {
 
-    const [formData, setFormData] = useState({
-        nik: "",
-        name: "",
-        alamat: "",
-        tempat_lahir: "",
-        tanggal_lahir: "",
-        userChoice: "",
-      });
+    const creditOptions = [
+        {
+          value: 'KREDIT_PRODUKTIF',
+          label: 'Kredit Produktif',
+          description: 'Untuk kebutuhan usaha',
+          icon: <Image src="/services-1.svg" alt="illustration" width={100} height={100} className="w-12 h-12 text-blue-500 mx-auto" />,
+        },
+        {
+          value: 'MULTIGUNA',
+          label: 'Kredit Multiguna',
+          description: 'Untuk kebutuhan pribadi',
+          icon: <Image src="/services-2.svg" alt="illustration" width={100} height={100} className="w-12 h-12 text-blue-500 mx-auto" />,
+        },
+        {
+          value: 'KPR',
+          label: 'KPR',
+          description: 'Kredit Pemilikan Rumah',
+          icon: <Image src="/services-3.svg" alt="illustration" width={100} height={100} className="w-12 h-12 text-blue-500 mx-auto" />,
+        },
+        {
+          value: 'PENSIUN',
+          label: 'Dana Pensiun',
+          description: 'Kredit untuk pensiunan',
+          icon: <Image src="/services-4.svg" alt="illustration" width={100} height={100} className="w-12 h-12 text-blue-500 mx-auto" />,
+        }
+      ]
+
+      const jaminanOptions = [
+        {
+          value: 'SERTIFIKAT',
+          title: "Sertifikat",
+          description: "Lorem ipsum dolor sit amet consectetur adipiscing elit",
+          icon: <Image src="/jaminan-1.svg" alt="illustration" width={100} height={100} className="w-12 h-12 text-blue-500 mx-auto" />,
+        },
+        {
+          value: 'BPKB',
+          title: "BPKB",
+          description: "Lorem ipsum dolor sit amet consectetur adipiscing elit",
+          icon: <Image src="/jaminan-2.svg" alt="illustration" width={100} height={100} className="w-12 h-12 text-blue-500 mx-auto" />,
+        },
+        {
+          value: 'SK_PEGAWAI',
+          title: "SK Pegawai",
+          description: "Lorem ipsum dolor sit amet consectetur adipiscing elit",
+          icon: <Image src="/jaminan-3.svg" alt="illustration" width={100} height={100} className="w-12 h-12 text-blue-500 mx-auto" />,
+        },
+      
+      ]
+      
+
+      const [formData, setFormData] = useState({
+        nik: '',
+        name: '',
+        alamat: '',
+        tempat_lahir: '',
+        tanggal_lahir: '',
+        userChoice: '',
+        userJaminan: ''
+      })
+      
+
       const [errors, setErrors] = useState<FormErrors>({});
-      const [showPassword, setShowPassword] = useState(false);
       const router = useRouter();
+
+      if (!formData.userChoice) {
+        errors.userChoice = 'Silakan pilih jenis kredit'
+      }
+
+      if (!formData.userJaminan) {
+        errors.userJaminan = 'Silakan pilih jenis jaminan'
+      }
 
       const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -52,23 +116,50 @@ export default function CreditForm() {
         }
       };
 
-      const validateForm = (): FormErrors => {
-        const newErrors: FormErrors = {};
-    
-        if (!formData.nik.trim()) newErrors.nik = "NIK harus diisi";
-        else if (!/^\d+$/.test(formData.nik)) newErrors.nik = "NIK harus angka";
-        
-        if (!formData.name.trim()) newErrors.name = "Nama harus diisi";
-    
-        if (!formData.alamat.trim()) newErrors.alamat = "Alamat harus diisi";
-    
-        if (!formData.tempat_lahir) newErrors.tempat_lahir = "Tempat lahir harus diisi";
-        if (!formData.tanggal_lahir) newErrors.tanggal_lahir = "Tanggal lahir harus diisi";
-    
-        if (!formData.userChoice) newErrors.userChoice = "Pilih kredit pengguna";
-    
-        return newErrors;
-      };
+      const validateForm = () => {
+        const newErrors: Record<string, string> = {}
+      
+        if (!formData.nik.trim()) newErrors.nik = 'NIK wajib diisi'
+        if (!formData.name.trim()) newErrors.name = 'Nama wajib diisi'
+        if (!formData.alamat.trim()) newErrors.alamat = 'Alamat wajib diisi'
+        if (!formData.tempat_lahir.trim()) newErrors.tempat_lahir = 'Tempat lahir wajib diisi'
+        if (!formData.tanggal_lahir) newErrors.tanggal_lahir = 'Tanggal lahir wajib diisi'
+      
+        setErrors(newErrors)
+        return Object.keys(newErrors).length === 0
+      }
+      
+
+      const validateCredit = () => {
+        if (!formData.userChoice) {
+          setErrors({ userChoice: 'Pilih salah satu jenis kredit' })
+          return false
+        }
+      
+        setErrors({})
+        return true
+      }
+
+      const validateJaminan = () => {
+        if (!formData.userJaminan) {
+          setErrors({ userJaminan: 'Pilih salah satu jaminan' })
+          return false
+        }
+      
+        setErrors({})
+        return true
+      }
+
+      const handleFormContinue = () => {
+        if (!validateForm()) return
+        setStep('credit')
+      }
+
+      const handleCreditContinue = () => {
+        if (!validateCredit()) return
+        setStep('jaminan')
+      }
+      
 
       const handlePhoneKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         // Allow: backspace, delete, tab, escape, enter
@@ -89,31 +180,41 @@ export default function CreditForm() {
         }
       };
 
-      const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-    
-        const validationErrors = validateForm();
-        if (Object.keys(validationErrors).length > 0) {
-          setErrors(validationErrors);
-          return;
+      type Step = 'form' | 'credit' | 'jaminan'
+
+      const [step, setStep] = useState<Step>('form')
+      
+      const handleBack = () => {
+        if (step === 'jaminan') {
+          setStep('credit')
+        } else if (step === 'credit') {
+          setStep('form')
         }
-    
-        // Jika semua valid, redirect ke /dashboard
-        router.push("/dashboard");
-      };
+      }
+      
+
+      const handleSubmit = () => {
+        if (!validateJaminan()) return
+        router.push('/dashboard')
+      }
+      
     
     return(
         <div>
       <NavbarHome />
       <main className="overflow-hidden">
         <section>
+            
           <div className="min-h-screen flex items-center justify-center bg-white px-4">
+            {step === 'form' && (
             <div className="w-full max-w-md">
+             
               <h1 className="text-center text-3xl font-bold mb-8">
-                Register
+                Form Kredit
               </h1>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
+             
+              <form className="space-y-5">
                 {/* NIK */}
                 <div>
                   <input
@@ -180,8 +281,8 @@ export default function CreditForm() {
                   {errors.tanggal_lahir && <p className="text-red-500 text-sm mt-1 ml-1">{errors.tanggal_lahir}</p>}
                 </div>
 
-                {/* Dropdown Agent/ Nasabah */}
-                <div>
+                {/* Dropdown Kredit Produktif, Kredit Multiguna, KPR, Dana Pensiun */}
+                {/* <div>
                   <div className="relative">
                     <select
                       name="userChoice"
@@ -200,15 +301,16 @@ export default function CreditForm() {
                     </div>
                   </div>
                   {errors.userChoice && <p className="text-red-500 text-sm mt-1 ml-1">{errors.userChoice}</p>}
-                </div>
+                </div> */}
 
                 {/* Button */}
                 <Button
-                  type="submit"
+                  type="button"
+                  onClick={handleFormContinue}
                   variant="default"
                   className="group hover:cursor-pointer w-full text-lg py-6 rounded-2xl bg-gradient-to-b from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white font-bold shadow-[0_4px_0_0_theme(colors.blue.600),0_8px_20px_theme(colors.blue.500/0.25)] hover:shadow-[0_6px_0_0_theme(colors.blue.700),0_10px_25px_theme(colors.blue.500/0.3)] active:shadow-[0_2px_0_0_theme(colors.blue.600),0_4px_10px_theme(colors.blue.500/0.2)] active:translate-y-0.5 transform transition-all duration-150"
                 >
-                  Submit
+                  Pilih Kredit
                   <div className=" text-white   size-6 overflow-hidden rounded-full duration-500">
                     <div className="flex w-12 -translate-x-1/2 duration-500 ease-in-out group-hover:translate-x-0">
                       <span className="flex size-6">
@@ -232,7 +334,160 @@ export default function CreditForm() {
                 </Link>
               </form>
             </div>
-          </div>
+            )}
+
+        
+            {step === 'credit' && (
+  <div className="space-y-10">
+    {/* CARD PILIHAN KREDIT */}
+    <h1 className="text-center text-3xl font-bold mb-20">
+        Pilihan Kredit
+    </h1>
+    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16 px-6">
+      {creditOptions.map((service, index) => {
+        const selected = formData.userChoice === service.value
+
+        return (
+          <button
+            key={index}
+            type="button"
+            onClick={() =>
+              setFormData(prev => ({
+                ...prev,
+                userChoice: service.value
+              }))
+            }
+            className={`
+              bg-white rounded-2xl p-10 text-center transition-all border-2
+              ${selected
+                ? 'border-blue-500 shadow-xl ring-2 ring-blue-500'
+                : 'border-transparent shadow-md hover:shadow-xl hover:border-blue-300'}
+            `}
+          >
+            <div className="flex justify-center">{service.icon}</div>
+            <h3 className="text-xl font-bold mt-4">{service.label}</h3>
+            <p className="text-gray-600 mt-2">{service.description}</p>
+          </button>
+        )
+      })}
+    </div>
+
+    {/* BUTTON CONTINUE */}
+    <Button
+  type="button"
+  disabled={!formData.userChoice}
+  onClick={handleCreditContinue}
+  className={`
+    group hover:cursor-pointer w-full text-lg py-6 rounded-2xl
+    bg-gradient-to-b from-blue-400 to-blue-500
+    hover:from-blue-500 hover:to-blue-600
+    text-white font-bold
+    shadow-[0_4px_0_0_theme(colors.blue.600),0_8px_20px_theme(colors.blue.500/0.25)]
+    hover:shadow-[0_6px_0_0_theme(colors.blue.700),0_10px_25px_theme(colors.blue.500/0.3)]
+    active:shadow-[0_2px_0_0_theme(colors.blue.600),0_4px_10px_theme(colors.blue.500/0.2)]
+    active:translate-y-0.5 transform transition-all duration-150
+    disabled:opacity-50 disabled:cursor-not-allowed
+  `}
+>
+  Pilih Jaminan
+  <div className="text-white size-6 overflow-hidden rounded-full duration-500">
+    <div className="flex w-12 -translate-x-1/2 duration-500 ease-in-out group-hover:translate-x-0">
+      <span className="flex size-6">
+        <ArrowRight className="m-auto size-5" />
+      </span>
+      <span className="flex size-6">
+        <ArrowRight className="m-auto size-5" />
+      </span>
+    </div>
+  </div>
+</Button>
+<Button
+                    type="button"
+                    onClick={handleBack}
+                    variant="outline"
+                    className="text-lg w-full py-6 rounded-2xl font-bold shadow-[0_4px_0_0_theme(colors.gray.300),0_8px_20px_theme(colors.gray.300/0.25)] hover:shadow-[0_6px_0_0_theme(colors.gray.400),0_10px_25px_theme(colors.gray.300/0.3)] hover:bg-gray-50 active:shadow-[0_2px_0_0_theme(colors.gray.300),0_4px_10px_theme(colors.gray.300/0.2)] active:translate-y-0.5 transform transition-all duration-150 dark:shadow-[0_4px_0_0_theme(colors.gray.600),0_8px_20px_theme(colors.gray.700/0.25)] dark:hover:shadow-[0_6px_0_0_theme(colors.gray.500),0_10px_25px_theme(colors.gray.700/0.3)] dark:hover:bg-gray-800 cursor-pointer"
+                  >
+                    Back
+                  </Button>
+  </div>
+)}
+
+{step === 'jaminan' && (
+  <div className="space-y-10">
+    {/* CARD PILIHAN KREDIT */}
+    <h1 className="text-center text-3xl font-bold mb-20">
+        Pilihan Jaminan
+    </h1>
+    <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-16 px-6">
+      {jaminanOptions.map((jaminan, index) => {
+        const selected = formData.userJaminan === jaminan.value
+
+        return (
+          <button
+            key={index}
+            type="button"
+            onClick={() =>
+              setFormData(prev => ({
+                ...prev,
+                userJaminan: jaminan.value
+              }))
+            }
+            className={`
+              bg-white rounded-2xl p-10 text-center transition-all border-2
+              ${selected
+                ? 'border-blue-500 shadow-xl ring-2 ring-blue-500'
+                : 'border-transparent shadow-md hover:shadow-xl hover:border-blue-300'}
+            `}
+          >
+            <div className="flex justify-center">{jaminan.icon}</div>
+            <h3 className="text-xl font-bold mt-4">{jaminan.title}</h3>
+            <p className="text-gray-600 mt-2">{jaminan.description}</p>
+          </button>
+        )
+      })}
+    </div>
+
+    {/* BUTTON CONTINUE */}
+    <Button
+  type="submit"
+  disabled={!formData.userJaminan}
+  onClick={handleSubmit}
+  className={`
+    group hover:cursor-pointer w-full text-lg py-6 rounded-2xl
+    bg-gradient-to-b from-blue-400 to-blue-500
+    hover:from-blue-500 hover:to-blue-600
+    text-white font-bold
+    shadow-[0_4px_0_0_theme(colors.blue.600),0_8px_20px_theme(colors.blue.500/0.25)]
+    hover:shadow-[0_6px_0_0_theme(colors.blue.700),0_10px_25px_theme(colors.blue.500/0.3)]
+    active:shadow-[0_2px_0_0_theme(colors.blue.600),0_4px_10px_theme(colors.blue.500/0.2)]
+    active:translate-y-0.5 transform transition-all duration-150
+    disabled:opacity-50 disabled:cursor-not-allowed
+  `}
+>
+  Submit
+  <div className="text-white size-6 overflow-hidden rounded-full duration-500">
+    <div className="flex w-12 -translate-x-1/2 duration-500 ease-in-out group-hover:translate-x-0">
+      <span className="flex size-6">
+        <ArrowRight className="m-auto size-5" />
+      </span>
+      <span className="flex size-6">
+        <ArrowRight className="m-auto size-5" />
+      </span>
+    </div>
+  </div>
+</Button>
+<Button
+                    type="button"
+                    onClick={handleBack}
+                    variant="outline"
+                    className="text-lg w-full py-6 rounded-2xl font-bold shadow-[0_4px_0_0_theme(colors.gray.300),0_8px_20px_theme(colors.gray.300/0.25)] hover:shadow-[0_6px_0_0_theme(colors.gray.400),0_10px_25px_theme(colors.gray.300/0.3)] hover:bg-gray-50 active:shadow-[0_2px_0_0_theme(colors.gray.300),0_4px_10px_theme(colors.gray.300/0.2)] active:translate-y-0.5 transform transition-all duration-150 dark:shadow-[0_4px_0_0_theme(colors.gray.600),0_8px_20px_theme(colors.gray.700/0.25)] dark:hover:shadow-[0_6px_0_0_theme(colors.gray.500),0_10px_25px_theme(colors.gray.700/0.3)] dark:hover:bg-gray-800 cursor-pointer"
+                  >
+                    Back
+                  </Button>
+  </div>
+)}
+
+        </div>
         </section>
       </main>
     </div>
