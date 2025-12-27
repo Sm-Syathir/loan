@@ -33,7 +33,7 @@ const techLogos = [
   },
 ];
 
-export default function Home() {
+export default function LandingPage() {
   return (
     <>
     <Navbar />

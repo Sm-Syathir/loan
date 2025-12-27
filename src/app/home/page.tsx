@@ -1,17 +1,49 @@
 "use client"
 
-import { useState } from "react"
-import Image from "next/image"
-import Modal from "@/components/ui/Modal"
-import { motion } from "motion/react";
-import { Button } from "./ui/Button";
+import Navbar, { NavbarHome } from "@/components/NavbarHome";
+import Hero from "@/components/Hero";
+import ProductSection from "@/components/ProductSection";
+import Footer from "@/components/Footer";
+import LogoLoop from "@/components/LogoLoop";
+import { motion } from "framer-motion";
 import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 import { FingerprintIcon } from "lucide-react";
+import Image from "next/image";
 
-export default function Hero() {
-  const [showModal, setShowModal] = useState(false)
+// import icons dari react-icons
+// import {
+//   SiReact,
+//   SiNextdotjs,
+//   SiTypescript,
+//   SiTailwindcss,
+// } from "react-icons/si";
 
+// daftar logo teknologi
+const techLogos = [
+  {
+    node: <img src="/Mandiri.png" alt="Mandiri Bank" className="h-12" />,
+    title: "Mandiri Bank",
+  },
+  {
+    node: <img src="/Mofi.png" alt="MOFI" className="h-12" />,
+    title: "MOFI",
+  },
+   {
+    node: <img src="/Bfi.png" alt="BFI Finance" className="h-12" />,
+    title: "BFI Finance",
+  },
+   {
+    node: <img src="/Bca.png" alt="Bca" className="h-12" />,
+    title: "CIMB Niaga",
+  },
+];
+
+export default function Home() {
   return (
+    <>
+    <NavbarHome />
+    
     <section className="relative pt-38 flex flex-col items-center justify-center text-center px-6 md:px-12 pb-16 md:pb-24">
       
       <motion.div
@@ -41,7 +73,7 @@ export default function Hero() {
 
       <Link href={"/register"}>
                     <Button className="rounded-2xl bg-gradient-to-b from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white font-bold py-6 px-8 text-lg shadow-[0_4px_0_0_theme(colors.blue.600),0_8px_20px_theme(colors.blue.500/0.25)] hover:shadow-[0_6px_0_0_theme(colors.blue.700),0_10px_25px_theme(colors.blue.500/0.3)] active:shadow-[0_2px_0_0_theme(colors.blue.600),0_4px_10px_theme(colors.blue.500/0.2)] active:translate-y-0.5 transform active:scale-95 transition-all duration-150">
-                      Daftar Sekarang
+                      Ajukan Pendanaan
                       <div className="ml-2 space-x-1 hidden sm:inline-flex">
                         <FingerprintIcon className="w-5 h-5" />
                       </div>
@@ -61,7 +93,7 @@ export default function Hero() {
                           /
                         </span>
                       </div>
-                      Login ke Akun
+                      ke Dashboard
                     </Button>
                   </Link>
       </div>
@@ -98,5 +130,24 @@ export default function Hero() {
       </motion.div>
       
     </section>
-  )
+
+    <div className="relative h-[200px] overflow-hidden">
+          <LogoLoop
+            logos={techLogos}
+            speed={120}
+            direction="left"
+            logoHeight={48}
+            width="100%"
+            gap={40}
+            pauseOnHover
+            scaleOnHover
+            fadeOut
+            fadeOutColor="#ffffff"
+            ariaLabel="Technology partners"
+          />
+        </div>
+    <ProductSection />
+    <Footer />
+    </>
+  );
 }
