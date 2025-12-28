@@ -51,4 +51,3 @@ export default function AuthForm({ mode }: { mode: 'login' | 'register' }) {
     </form>
   )
 }
-// ...existing code...

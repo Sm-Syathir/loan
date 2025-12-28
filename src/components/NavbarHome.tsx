@@ -16,7 +16,7 @@ const menuItems = [
   // { name: "Feedback", href: "/feedback" },
 ];
 
-export const Navbar = () => {
+export const NavbarHome = () => {
   const [menuState, setMenuState] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
 
@@ -47,7 +47,7 @@ export const Navbar = () => {
               <Link
                 href="/"
                 aria-label="home"
-                className="flex items-center space-x-2 font-bold "
+                className="flex items-center space-x-2"
               >
                 <Logo/>
               </Link>
@@ -93,30 +93,22 @@ export const Navbar = () => {
                 </ul>
               </div>
               <div className="w-full lg:w-auto">
-                <Link
-                  href="/register"
-                  onClick={() => setMenuState(false)}
-                  className="block"
+              <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                //   onClick={() => signOut({ callbackUrl: "/" })}
+                  className={cn(
+                    `cursor-pointer border-red-500 text-red-500 hover:bg-red-500 hover:text-white ${
+                      isScrolled ? "lg:inline-flex" : "inline-flex"
+                    }`
+                  )}
                 >
-                  <motion.div
-                    className="relative flex items-center justify-center gap-2 bg-[#0C0A3E] text-white px-3 py-2 rounded-full font-medium shadow-lg hover:bg-[#0C0A3E]/90 hover:shadow-xl transition-all duration-200"
-                    whileTap={{ scale: 0.95 }}
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <span className="text-sm font-semibold">Daftar Sekarang</span>
-                    <motion.div 
-                      className="flex items-center justify-center w-7 h-7 bg-[#0081FF] rounded-full"
-                      animate={{ x: [0, 3, 0] }}
-                      transition={{
-                        repeat: Infinity,
-                        repeatDelay: 1,
-                        duration: 0.6,
-                      }}
-                    >
-                      <ArrowRight size={14} className="text-white" />
-                    </motion.div>
-                  </motion.div>
-                </Link>
+                  {/* <Link href="/question">
+                    <Search className="w-4 h-4" />
+                  </Link> */}
+                  <p>Log out</p>
+                </Button>
               </div>
             </div>
           </div>
@@ -126,4 +118,4 @@ export const Navbar = () => {
   );
 };
 
-export default Navbar
+export default NavbarHome
