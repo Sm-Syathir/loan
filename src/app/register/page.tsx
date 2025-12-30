@@ -97,7 +97,7 @@ export default function RegisterPage() {
     }
 
     try {
-      // 1️⃣ Register user di Supabase Auth
+      //  Register user di Supabase Auth
       const { data: supaData, error: supaError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -124,7 +124,7 @@ export default function RegisterPage() {
       const result = await res.json();
       if (!res.ok) throw new Error(result.message || "Gagal menyimpan profile");
 
-      // 3️⃣ Jika berhasil semua, redirect ke login
+      // Jika berhasil semua, redirect ke login
       alert("Registrasi berhasil! Silakan login.");
       router.push("/login");
 

@@ -5,10 +5,7 @@ import { useEffect, useState } from "react"
 import { supabase } from "../lib/supabase"
 import { useRouter } from "next/navigation"
 
-/* ======================
-   TYPES
-====================== */
-
+// types
 type Status = {
   status: "DIAJUKAN" | "DIPROSES" | "DITERIMA" | "DITOLAK"
   catatan?: string | null
@@ -23,143 +20,154 @@ type CreditApplication = {
   statuses: Status[]
 }
 
-/* ======================
-   PAGE
-====================== */
-
 export default function MonitorStatusKredit() {
   const [items, setItems] = useState<CreditApplication[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
   const router = useRouter()
 
   useEffect(() => {
+    let isMounted = true
+
     const fetchData = async () => {
       try {
         setLoading(true)
         setError(null)
 
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
+        const { data, error: sessionError } =
+          await supabase.auth.getSession()
 
-        if (!session) {
+        if (sessionError || !data.session) {
           router.replace("/login")
           return
         }
 
-        // 2️⃣ fetch ke BACKEND (port 4000)
+        const token = data.session.access_token
+
         const res = await fetch(
-          "http://localhost:4000/credit-applications",
+          "http://localhost:4000/credit-applications/my",
           {
+            method: "GET",
             headers: {
-              Authorization: `Bearer ${session.access_token}`,
+              Authorization: `Bearer ${token}`,
             },
+            cache: "no-store",
           }
         )
 
-        const json = await res.json()
-
         if (!res.ok) {
-          throw new Error(json.message || "Gagal mengambil data")
+          const text = await res.text()
+          throw new Error(text || "Gagal mengambil data")
         }
 
-        setItems(json.data ?? [])
+        const json = await res.json()
+
+        if (isMounted) {
+          setItems(Array.isArray(json.data) ? json.data : [])
+        }
       } catch (err: any) {
         console.error("MONITOR FETCH ERROR:", err)
-        setError(err.message ?? "Terjadi kesalahan")
+        if (isMounted) {
+          setError(err.message || "Terjadi kesalahan")
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
     fetchData()
+
+    return () => {
+      isMounted = false
+    }
   }, [router])
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex">
       <Sidebar />
 
-      <main className="p-6 lg:pl-72">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold mb-6">
-            Monitor Status Kredit
-          </h1>
+      <main className="flex-1 p-8">
+        <h1 className="text-2xl font-bold mb-6">
+          Monitor Status Kredit
+        </h1>
 
-          {/* Loading */}
-          {loading && <p>Memuat...</p>}
+        {loading && (
+          <p className="text-gray-500">Memuat data...</p>
+        )}
 
-          {/* Error */}
-          {error && (
-            <p className="text-red-500 font-medium">
-              {error}
-            </p>
-          )}
+        {error && (
+          <p className="text-red-500 font-medium">
+            {error}
+          </p>
+        )}
 
-          {/* Content */}
-          {!loading && !error && (
-            <div className="space-y-4">
-              {items.length === 0 && (
-                <p className="text-gray-500">
-                  Belum ada pengajuan kredit.
-                </p>
-              )}
+        {!loading && !error && (
+          <div className="space-y-4">
+            {items.length === 0 && (
+              <p className="text-gray-500">
+                Belum ada pengajuan kredit.
+              </p>
+            )}
 
-              {items.map((it) => {
-                const latestStatus =
-                  it.statuses.length > 0
-                    ? it.statuses[0]
-                    : null
+            {items.map((it) => {
+              const latestStatus =
+                it.statuses
+                  ?.slice()
+                  .sort(
+                    (a, b) =>
+                      new Date(b.created_at).getTime() -
+                      new Date(a.created_at).getTime()
+                  )[0] ?? null
 
-                return (
-                  <div
-                    key={it.kode_pengajuan}
-                    className="border rounded-xl p-4 shadow-sm bg-white"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="text-sm text-gray-500">
-                          Kode Pengajuan
-                        </div>
-                        <div className="text-lg font-semibold">
-                          {it.kode_pengajuan}
-                        </div>
+              return (
+                <div
+                  key={it.kode_pengajuan}
+                  className="border rounded-xl p-4 shadow-sm bg-white"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="text-sm text-gray-500">
+                        Kode Pengajuan
                       </div>
-
-                      <div className="text-right">
-                        <div className="text-sm text-gray-500">
-                          Status Terakhir
-                        </div>
-                        <div className="font-semibold">
-                          {latestStatus?.status ?? "—"}
-                        </div>
+                      <div className="text-lg font-semibold">
+                        {it.kode_pengajuan}
                       </div>
                     </div>
 
-                    <div className="mt-4 text-sm text-gray-700 space-y-1">
-                      <div>Nama: {it.nama_lengkap}</div>
-                      <div>
-                        Jenis Kredit: {it.jenis_kredit}
+                    <div className="text-right">
+                      <div className="text-sm text-gray-500">
+                        Status Terakhir
                       </div>
-                      <div>
-                        Plafond:{" "}
-                        {new Intl.NumberFormat("id-ID").format(
-                          it.plafond
-                        )}
+                      <div className="font-semibold">
+                        {latestStatus?.status ?? "-"}
                       </div>
-
-                      {latestStatus?.catatan && (
-                        <div className="mt-2 text-gray-600">
-                          Catatan: {latestStatus.catatan}
-                        </div>
-                      )}
                     </div>
                   </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
+
+                  <div className="mt-4 text-sm text-gray-700 space-y-1">
+                    <div>Nama: {it.nama_lengkap}</div>
+                    <div>Jenis Kredit: {it.jenis_kredit}</div>
+                    <div>
+                      Plafond:{" "}
+                      {new Intl.NumberFormat("id-ID").format(
+                        it.plafond
+                      )}
+                    </div>
+
+                    {latestStatus?.catatan && (
+                      <div className="mt-2 text-gray-600">
+                        Catatan: {latestStatus.catatan}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </main>
     </div>
   )
