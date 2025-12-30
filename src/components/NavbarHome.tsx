@@ -7,6 +7,10 @@ import { Menu, X, Search, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Logo from "./Logo";
 import { motion } from "framer-motion";
+import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/app/lib/supabase";
+
 
 const menuItems = [
   { name: "Kenapa Loan", href: "" },
@@ -19,6 +23,7 @@ const menuItems = [
 export const NavbarHome = () => {
   const [menuState, setMenuState] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const router = useRouter();
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -92,23 +97,33 @@ export const NavbarHome = () => {
                   ))}
                 </ul>
               </div>
-              <div className="w-full lg:w-auto">
-              <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                //   onClick={() => signOut({ callbackUrl: "/" })}
-                  className={cn(
-                    `cursor-pointer border-red-500 text-red-500 hover:bg-red-500 hover:text-white ${
-                      isScrolled ? "lg:inline-flex" : "inline-flex"
-                    }`
-                  )}
-                >
-                  {/* <Link href="/question">
-                    <Search className="w-4 h-4" />
-                  </Link> */}
-                  <p>Log out</p>
-                </Button>
+                <div className="w-full lg:w-auto">
+               <Button
+    size="sm"
+    variant="outline"
+    onClick={async () => {
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        console.error('Supabase signOut error', e);
+      }
+      try {
+        // signOut from next-auth if used; don't auto-redirect so we control navigation
+        await signOut({ redirect: false });
+      } catch (e) {
+        console.error('next-auth signOut error', e);
+      }
+      router.push('/');
+    }}
+    className={cn(
+      `cursor-pointer border-red-500 text-red-500 hover:bg-red-500 hover:text-white ${
+        isScrolled ? "lg:inline-flex" : "inline-flex"
+      }`
+    )}
+  >
+    <p>Log out</p>
+  </Button>
+
               </div>
             </div>
           </div>

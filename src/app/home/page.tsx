@@ -10,6 +10,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { FingerprintIcon } from "lucide-react";
 import Image from "next/image";
+import router from "next/dist/shared/lib/router/router";
+import { supabase } from "../lib/supabase";
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 // import icons dari react-icons
 // import {
@@ -39,7 +43,40 @@ const techLogos = [
   },
 ];
 
+
+
+
 export default function Home() {
+
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
+  
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          setLoading(true)
+          setError(null)
+  
+          const {
+            data: { session },
+          } = await supabase.auth.getSession()
+  
+          if (!session) {
+            router.replace("/login")
+            return
+          }
+          
+          setLoading(false)
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "An error occurred")
+          setLoading(false)
+        }
+      }
+      
+      fetchData()
+    }, [router])
+  
   return (
     <>
     <NavbarHome />
@@ -139,9 +176,7 @@ export default function Home() {
             logoHeight={48}
             width="100%"
             gap={40}
-            pauseOnHover
-            scaleOnHover
-            fadeOut
+            pauseOnHover={false}
             fadeOutColor="#ffffff"
             ariaLabel="Technology partners"
           />

@@ -1,6 +1,7 @@
 
 "use client";
 
+
 import {
     Book,
   Home,
@@ -23,15 +24,26 @@ export default function Sidebar() {
   return (
     <aside className="w-72 bg-gradient-to-b from-white to-gray-50 border-r border-gray-200 shadow-xl p-6 hidden md:block h-screen sticky top-0 overflow-y-auto">
       {/* Logo/Brand Section */}
-      <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gray-200">
-        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
-          <span className="text-white font-bold text-lg">L</span>
-        </div>
-        <div>
-          <h2 className="text-xl font-bold">Loan</h2>
-          {/* <h5>Firas Prabawa</h5> */}
-        </div>
-      </div>
+    <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gray-200">
+  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+    <span className="text-white font-bold text-lg">L</span>
+  </div>
+
+  <div>
+    <h2 className="text-xl font-bold">Loan</h2>
+  </div>
+
+  <div className="ml-auto">
+    <Link href="/home">
+      <img
+        src="/back.png"
+        alt="back"
+        className="w-6 h-6 cursor-pointer"
+      />
+    </Link>
+  </div>
+</div>
+
       
 
       <nav className="flex flex-col gap-2">
