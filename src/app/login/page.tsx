@@ -58,8 +58,42 @@ export default function LoginPage() {
         return;
       }
 
-      // Jika login berhasil, redirect ke /home
-      router.push("/home");
+      // Jika login berhasil, cek role dari backend lalu redirect
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+
+        if (token) {
+          const res = await fetch("https://be-loan.vercel.app/users", {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}` }
+          });
+
+          if (res.ok) {
+            const json = await res.json();
+            const currentUser = json.data.find((u: any) => (u.email || "").toLowerCase() === (data.user?.email || formData.email || "").toLowerCase());
+
+            if (currentUser) {
+              // Backend sample shows structure: { role_id: 1, role: { id: 1, nama_role: "Admin\n" } }
+              const roleId = currentUser.role_id ?? currentUser.role?.id ?? currentUser.role?.role_id;
+              const roleNameRaw = currentUser.role?.nama_role ?? currentUser.role_name ?? currentUser.nama_role ?? currentUser.role?.name;
+              const roleName = typeof roleNameRaw === 'string' ? roleNameRaw.trim().toLowerCase() : null;
+
+              const isAdmin = (roleId !== undefined && Number(roleId) === 1) || (roleName === 'admin');
+
+              if (isAdmin) {
+                router.push("/admin/dashboard");
+                return;
+              }
+            }
+          }
+        }
+
+        // Default redirect jika bukan admin atau gagal cek role
+        router.push("/home");
+      } catch (err) {
+        router.push("/home");
+      }
 
     } catch (err) {
       setErrors({ email: "Terjadi kesalahan saat login" });

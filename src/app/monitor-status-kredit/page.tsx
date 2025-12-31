@@ -46,7 +46,7 @@ export default function MonitorStatusKredit() {
         const token = data.session.access_token
 
         const res = await fetch(
-          "http://localhost:4000/credit-applications/my",
+          "https://be-loan.vercel.app/credit-applications/my",
           {
             method: "GET",
             headers: {
