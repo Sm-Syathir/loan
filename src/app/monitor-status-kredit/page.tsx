@@ -17,8 +17,10 @@ type CreditApplication = {
   nama_lengkap: string
   jenis_kredit: string
   plafond: number
+  jaminan?: string   
   statuses: Status[]
 }
+
 
 export default function MonitorStatusKredit() {
   const [items, setItems] = useState<CreditApplication[]>([])
