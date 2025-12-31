@@ -1,18 +1,15 @@
-
 "use client";
 
-
-import {
-    Book,
-  Home,
-  User
-} from "lucide-react";
-
+import { Book, Home, User, LogOut } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { supabase } from "@/app/lib/supabase";
+import { Button } from "@/components/ui/Button";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
 
   const isActive = (route: string) => {
     if (route === "/dashboard") {
@@ -21,76 +18,97 @@ export default function Sidebar() {
     return pathname === route || pathname.startsWith(`${route}/`);
   };
 
+  const handleLogout = async () => {
+    try {
+      // Sign out dari Supabase
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.error('Supabase signOut error', e);
+    }
+    
+    try {
+      // Sign out dari next-auth jika digunakan
+      await signOut({ redirect: false });
+    } catch (e) {
+      console.error('next-auth signOut error', e);
+    }
+    
+    // Redirect ke halaman home
+    router.push('/');
+  };
+
   return (
-    <aside className="w-72 bg-gradient-to-b from-white to-gray-50 border-r border-gray-200 shadow-xl p-6 hidden md:block h-screen sticky top-0 overflow-y-auto">
+    <aside className="w-72 bg-gradient-to-b from-white to-gray-50 border-r border-gray-200 shadow-xl p-6 hidden md:flex flex-col h-screen sticky top-0">
       {/* Logo/Brand Section */}
-    <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gray-200">
-  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
-    <span className="text-white font-bold text-lg">L</span>
-  </div>
+      <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gray-200">
+        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+          <span className="text-white font-bold text-lg">L</span>
+        </div>
+        <div>
+          <h2 className="text-xl font-bold">Loan</h2>
+        </div>
+      </div>
 
-  <div>
-    <h2 className="text-xl font-bold">Loan</h2>
-  </div>
+      {/* Navigation Items */}
+      <nav className="flex-1 flex flex-col">
+        <div className="flex flex-col gap-2">
+          {/* DASHBOARD */}
+          <Link
+            href="/home"
+            className={`
+              flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
+              ${isActive("/home") 
+                ? "bg-blue-50 text-blue-600 font-semibold shadow-sm border border-blue-100" 
+                : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+              }
+            `}
+          >
+            <Home className={`h-5 w-5 ${isActive("/home") ? "text-blue-600" : "text-gray-500"}`} />
+            <span className="text-sm font-medium">Dashboard</span>
+          </Link>
 
-  <div className="ml-auto">
-    <Link href="/home">
-      <img
-        src="/back.png"
-        alt="back"
-        className="w-6 h-6 cursor-pointer"
-      />
-    </Link>
-  </div>
-</div>
+          {/* MONITOR LOAN STATUS */}
+          <Link
+            href="/monitor-status-kredit"
+            className={`
+              flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
+              ${isActive("/monitor-status-kredit") 
+                ? "bg-blue-50 text-blue-600 font-semibold shadow-sm border border-blue-100" 
+                : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+              }
+            `}
+          >
+            <Book className={`h-5 w-5 ${isActive("/monitor-status-kredit") ? "text-blue-600" : "text-gray-500"}`} />
+            <span className="text-sm font-medium">Monitor Status Kredit</span>
+          </Link>
 
-      
+          {/* PROFILE */}
+          <Link
+            href="/profile"
+            className={`
+              flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
+              ${isActive("/profile") 
+                ? "bg-blue-50 text-blue-600 font-semibold shadow-sm border border-blue-100" 
+                : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+              }
+            `}
+          >
+            <User className={`h-5 w-5 ${isActive("/profile") ? "text-blue-600" : "text-gray-500"}`} />
+            <span className="text-sm font-medium">Profile</span>
+          </Link>
+        </div>
 
-      <nav className="flex flex-col gap-2">
-        {/* DASHBOARD */}
-        <Link
-          href="/dashboard"
-          className={`
-            flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
-            ${isActive("/dashboard") 
-              ? "bg-blue-50 text-blue-600 font-semibold shadow-sm border border-blue-100" 
-              : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-            }
-          `}
-        >
-          <Home className={`h-5 w-5 ${isActive("/dashboard") ? "text-blue-600" : "text-gray-500"}`} />
-          <span className="text-sm font-medium">Dashboard</span>
-        </Link>
-
-        {/* MONITOR LOAN STATUS */}
-        <Link
-          href="/monitor-status-kredit"
-          className={`
-            flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
-            ${isActive("/monitor-status-kredit") 
-              ? "bg-blue-50 text-blue-600 font-semibold shadow-sm border border-blue-100" 
-              : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-            }
-          `}
-        >
-          <Book className={`h-5 w-5 ${isActive("/monitor-status-kredit") ? "text-blue-600" : "text-gray-500"}`} />
-          <span className="text-sm font-medium">Monitor Status Kredit</span>
-        </Link>
-
-        {/* PROFILE */}
-        <Link
-          href="/profile"
-          className={`
-            flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
-            ${isActive("/profile") 
-              ? "bg-blue-50 text-blue-600 font-semibold shadow-sm border border-blue-100" 
-              : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-            }
-          `}
-        >
-          <User className={`h-5 w-5 ${isActive("/profile") ? "text-blue-600" : "text-gray-500"}`} />
-          <span className="text-sm font-medium">Profile</span>
-        </Link>
+        {/* Logout Button - di bagian bawah */}
+        <div className="mt-auto pt-6 border-t border-gray-200">
+          <Button
+            variant="outline"
+            onClick={handleLogout}
+            className="w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-600 transition-all duration-200 py-2.5 rounded-xl font-medium"
+          >
+            <LogOut className="h-5 w-5 mr-2" />
+            Log out
+          </Button>
+        </div>
       </nav>
     </aside>
   );

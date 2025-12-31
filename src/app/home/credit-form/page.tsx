@@ -3,7 +3,7 @@
 import NavbarHome from "@/components/NavbarHome"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button";
-import { ArrowRight, ChevronDown, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, ChevronDown, Eye, EyeOff, X, CheckCircle, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -20,7 +20,83 @@ interface FormErrors {
   userJaminan?: string;
 }
 
+// Tambahkan komponen Toast/Modal di bagian atas komponen
+const SuccessModal = ({ message, onClose }: { message: string; onClose: () => void }) => {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-300">
+        <div className="flex flex-col items-center text-center">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
+            <CheckCircle className="w-12 h-12 text-green-600" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Berhasil!</h3>
+          <p className="text-gray-600 mb-6">{message}</p>
+          <Button
+            onClick={onClose}
+            className="px-8 py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-lg"
+          >
+            Oke
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ErrorModal = ({ message, onClose }: { message: string; onClose: () => void }) => {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-300">
+        <div className="flex flex-col items-center text-center">
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6">
+            <AlertCircle className="w-12 h-12 text-red-600" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Oops!</h3>
+          <p className="text-gray-600 mb-6">{message}</p>
+          <Button
+            onClick={onClose}
+            className="px-8 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold shadow-lg"
+          >
+            Coba Lagi
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const WarningToast = ({ message, onClose }: { message: string; onClose: () => void }) => {
+  return (
+    <div className="fixed top-6 right-6 z-50 animate-in slide-in-from-right-8 duration-300">
+      <div className="bg-amber-50 border-l-4 border-amber-500 rounded-xl p-4 shadow-lg max-w-sm">
+        <div className="flex items-start">
+          <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 mr-3 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-amber-800 text-sm font-medium">{message}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="ml-4 text-amber-600 hover:text-amber-800 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const LoadingOverlay = ({ message }: { message: string }) => {
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+      <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p className="text-gray-700 font-medium animate-pulse">{message}</p>
+    </div>
+  );
+};
+
 export default function CreditForm() {
+  // ... (kode creditOptions, jaminanOptions, formData, errors, step, isLoading tetap sama)
 
   const creditOptions = [
     {
@@ -86,17 +162,29 @@ export default function CreditForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  // State untuk modal/toast
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showWarningToast, setShowWarningToast] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+
   // Check authentication on mount
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        alert('Anda harus login terlebih dahulu');
-        router.push('/login');
+        setModalMessage('Anda harus login terlebih dahulu');
+        setShowWarningToast(true);
+        setTimeout(() => {
+          router.push('/login');
+        }, 2000);
       }
     };
     checkAuth();
   }, [router]);
+
+  // ... (handleChange, validateForm, validateCredit, validateJaminan, 
+  // handleFormContinue, handleCreditContinue, handleBack tetap sama)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -204,8 +292,9 @@ export default function CreditForm() {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !session) {
-        alert('Sesi Anda telah berakhir. Silakan login kembali.');
-        router.push('/login');
+        setModalMessage('Sesi Anda telah berakhir. Silakan login kembali.');
+        setShowErrorModal(true);
+        setIsLoading(false);
         return;
       }
 
@@ -233,20 +322,64 @@ export default function CreditForm() {
         throw new Error(result.message || 'Gagal mengirim data');
       }
 
-      alert('Pengajuan kredit berhasil disubmit!');
-      router.push('/dashboard');
+      setModalMessage('Pengajuan kredit berhasil disubmit!');
+      setShowSuccessModal(true);
+      
     } catch (error: any) {
       console.error('Submit error:', error);
-      alert(error.message || 'Terjadi kesalahan saat mengirim data');
+      setModalMessage(error.message || 'Terjadi kesalahan saat mengirim data');
+      setShowErrorModal(true);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Handler untuk menutup modal dan redirect
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
+    router.push('/monitor-status-kredit');
+  };
+
+  const handleErrorClose = () => {
+    setShowErrorModal(false);
+  };
+
+  const handleWarningClose = () => {
+    setShowWarningToast(false);
+  };
+
   return (
     <div>
       <NavbarHome />
+      
+      {/* Render Modals dan Toasts */}
+      {showSuccessModal && (
+        <SuccessModal 
+          message={modalMessage} 
+          onClose={handleSuccessClose} 
+        />
+      )}
+      
+      {showErrorModal && (
+        <ErrorModal 
+          message={modalMessage} 
+          onClose={handleErrorClose} 
+        />
+      )}
+      
+      {showWarningToast && (
+        <WarningToast 
+          message={modalMessage} 
+          onClose={handleWarningClose} 
+        />
+      )}
+      
+      {isLoading && (
+        <LoadingOverlay message="Mengirim pengajuan kredit..." />
+      )}
+      
       <main className="overflow-hidden">
+        {/* ... (kode JSX selanjutnya tetap sama persis) */}
         <section>
           <div className="min-h-screen flex items-center justify-center bg-white px-4">
             {step === 'form' && (

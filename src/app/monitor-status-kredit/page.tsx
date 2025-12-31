@@ -156,6 +156,7 @@ export default function MonitorStatusKredit() {
                         it.plafond
                       )}
                     </div>
+                     <div>Jaminan: {it.jaminan}</div>
 
                     {latestStatus?.catatan && (
                       <div className="mt-2 text-gray-600">
