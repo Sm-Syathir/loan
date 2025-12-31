@@ -75,6 +75,12 @@ export default function RegisterPage() {
     if (!formData.name.trim()) newErrors.name = "Nama harus diisi";
     if (!formData.email.trim()) newErrors.email = "Email harus diisi";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email tidak valid";
+    else {
+      const firstChar = formData.email.trim().charAt(0);
+      if (!/^[a-z]$/.test(firstChar)) {
+        newErrors.email = "Email harus diawali huruf kecil";
+      }
+    }
 
     if (!formData.no_phone.trim()) newErrors.no_phone = "Nomor telepon harus diisi";
     else if (!/^\d+$/.test(formData.no_phone)) newErrors.no_phone = "Nomor telepon harus angka";

@@ -15,7 +15,9 @@ import {
   AlertCircle,
   FileText,
   RefreshCw,
-  X
+  X,
+  Check,
+  AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -39,7 +41,7 @@ interface ApplicationStatus {
 interface CreditApplication {
   id: number;
   kode_pengajuan: string;
-  nama_lengkap: string; // Diubah dari nama_lengkap menjadi nama_lengkap untuk konsistensi
+  nama_lengkap: string;
   jenis_kredit: string;
   plafond: number;
   jaminan: string;
@@ -47,6 +49,70 @@ interface CreditApplication {
   created_at: string;
   status?: string;
 }
+
+const SuccessToast = ({ message, onClose }: { message: string; onClose: () => void }) => {
+  return (
+    <div className="fixed top-6 right-6 z-50 animate-in slide-in-from-right-8 duration-300">
+      <div className="bg-green-50 border-l-4 border-green-500 rounded-xl p-4 shadow-lg max-w-sm">
+        <div className="flex items-start">
+          <Check className="w-5 h-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-green-800 text-sm font-medium">{message}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="ml-4 text-green-600 hover:text-green-800 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ErrorToast = ({ message, onClose }: { message: string; onClose: () => void }) => {
+  return (
+    <div className="fixed top-6 right-6 z-50 animate-in slide-in-from-right-8 duration-300">
+      <div className="bg-red-50 border-l-4 border-red-500 rounded-xl p-4 shadow-lg max-w-sm">
+        <div className="flex items-start">
+          <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-red-800 text-sm font-medium">{message}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="ml-4 text-red-600 hover:text-red-800 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const WarningModal = ({ message, onClose }: { message: string; onClose: () => void }) => {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-300">
+        <div className="flex flex-col items-center text-center">
+          <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-6">
+            <AlertCircle className="w-8 h-8 text-amber-600" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Perhatian</h3>
+          <p className="text-gray-600 mb-6">{message}</p>
+          <Button
+            onClick={onClose}
+            className="px-8 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold shadow-lg"
+          >
+            Oke
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
@@ -61,6 +127,10 @@ export default function AdminDashboard() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [newStatus, setNewStatus] = useState("");
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
   const router = useRouter();
 
   const statusOptions = [
@@ -80,7 +150,6 @@ export default function AdminDashboard() {
           return;
         }
 
-        // Ambil data user
         const token = session.access_token;
         const res = await fetch("https://be-loan.vercel.app/users", {
           method: "GET",
@@ -91,11 +160,27 @@ export default function AdminDashboard() {
 
         if (res.ok) {
           const json = await res.json();
-          const currentUser = json.data.find((u: any) => u.email === session.user?.email);
+          const currentUser = json.data.find((u: any) => (u.email || '').toLowerCase() === (session.user?.email || '').toLowerCase());
+
+          if (!currentUser) {
+            setToastMessage("User tidak ditemukan atau tidak terdaftar");
+            setShowWarningModal(true);
+            setTimeout(() => router.replace("/home"), 1500);
+            return;
+          }
+
+          // STRICT check: role_id === 1 is Admin
+          const roleId = currentUser.role_id ?? currentUser.role?.id ?? null;
+          if (Number(roleId) !== 1) {
+            setToastMessage("Akses ditolak: hanya Admin yang dapat mengakses halaman ini");
+            setShowWarningModal(true);
+            setTimeout(() => router.replace("/home"), 1500);
+            return;
+          }
+
           setUser(currentUser);
         }
 
-        // Load data setelah user terautentikasi
         await Promise.all([
           fetchApplications(token),
           fetchApplicationStatuses(token)
@@ -104,8 +189,11 @@ export default function AdminDashboard() {
         setLoading(false);
       } catch (error) {
         console.error("Error checking session:", error);
-        alert("Terjadi kesalahan saat memverifikasi akses");
-        router.replace("/login");
+        setToastMessage("Terjadi kesalahan saat memverifikasi akses");
+        setShowWarningModal(true);
+        setTimeout(() => {
+          router.replace("/login");
+        }, 1500);
       }
     };
 
@@ -171,7 +259,8 @@ export default function AdminDashboard() {
 
   const handleUpdateStatus = async () => {
     if (!selectedApplication || !newStatus) {
-      alert("Harap pilih status");
+      setToastMessage("Harap pilih status");
+      setShowWarningModal(true);
       return;
     }
 
@@ -195,22 +284,29 @@ export default function AdminDashboard() {
 
       if (res.ok) {
         const result = await res.json();
-        alert("Status berhasil diperbarui");
+        setToastMessage("Status berhasil diperbarui");
+        setShowSuccessToast(true);
         setShowStatusModal(false);
         setNewStatus("");
         setSelectedApplication(null);
-        // Refresh both applications and statuses
+        
         await Promise.all([
           fetchApplications(token),
           fetchApplicationStatuses(token)
         ]);
+        
+        setTimeout(() => {
+          setShowSuccessToast(false);
+        }, 3000);
       } else {
         const errorData = await res.json().catch(() => ({ message: "Terjadi kesalahan" }));
-        alert("Gagal memperbarui status: " + (errorData.message || "Unknown error"));
+        setToastMessage("Gagal memperbarui status: " + (errorData.message || "Unknown error"));
+        setShowErrorToast(true);
       }
     } catch (error) {
       console.error("Error updating status:", error);
-      alert("Terjadi kesalahan saat memperbarui status");
+      setToastMessage("Terjadi kesalahan saat memperbarui status");
+      setShowErrorToast(true);
     }
   };
 
@@ -222,7 +318,6 @@ export default function AdminDashboard() {
       console.error("Logout error:", error);
     }
   };
-
 
   const filteredApplications = applications.filter(app => {
     if (!app) return false;
@@ -253,6 +348,18 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSuccessToastClose = () => {
+    setShowSuccessToast(false);
+  };
+
+  const handleErrorToastClose = () => {
+    setShowErrorToast(false);
+  };
+
+  const handleWarningModalClose = () => {
+    setShowWarningModal(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -266,6 +373,28 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      
+      {showSuccessToast && (
+        <SuccessToast 
+          message={toastMessage} 
+          onClose={handleSuccessToastClose} 
+        />
+      )}
+      
+      {showErrorToast && (
+        <ErrorToast 
+          message={toastMessage} 
+          onClose={handleErrorToastClose} 
+        />
+      )}
+      
+      {showWarningModal && (
+        <WarningModal 
+          message={toastMessage} 
+          onClose={handleWarningModalClose} 
+        />
+      )}
+      
       <nav className="bg-white border-b border-gray-200 shadow-sm">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
@@ -303,7 +432,6 @@ export default function AdminDashboard() {
 
       <div className="p-15">
         <div className="max-w-7xl mx-auto">
-          {/* Welcome Section */}
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
               Selamat datang Admin, {user?.name || "Admin"} 👋
@@ -640,7 +768,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Status Update Modal */}
       {showStatusModal && selectedApplication && (
         <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white shadow-2xl border-2 border-grey-800 rounded-xl max-w-md w-full">

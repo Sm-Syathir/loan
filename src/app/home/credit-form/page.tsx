@@ -298,7 +298,7 @@ export default function CreditForm() {
         return;
       }
 
-      const response = await fetch('http://localhost:4000/credit-applications', {
+      const response = await fetch('https://be-loan.vercel.app/credit-applications', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
