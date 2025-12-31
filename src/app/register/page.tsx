@@ -111,7 +111,7 @@ export default function RegisterPage() {
     if (error) throw error;
     if (!data.user) throw new Error("User supabase tidak terbentuk");
 
-    const res = await fetch("http://localhost:4000/users", {
+    const res = await fetch("https://be-loan.vercel.app/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

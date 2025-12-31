@@ -46,7 +46,7 @@ export default function MonitorStatusKredit() {
         const token = data.session.access_token
 
         const res = await fetch(
-          "http://localhost:4000/credit-applications/my",
+          "https://be-loan.vercel.app/credit-applications/my",
           {
             method: "GET",
             headers: {
@@ -151,7 +151,7 @@ export default function MonitorStatusKredit() {
                     <div>Nama: {it.nama_lengkap}</div>
                     <div>Jenis Kredit: {it.jenis_kredit}</div>
                     <div>
-                      Plafond:{" "}
+                      Plafond: Rp{" "}
                       {new Intl.NumberFormat("id-ID").format(
                         it.plafond
                       )}
