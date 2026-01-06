@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { supabase } from "../lib/supabase"
 import { useRouter } from "next/navigation"
 import Sidebar from "@/components/Sidebar"
-import { User, Phone, Mail, Calendar, Shield } from "lucide-react"
+import { User, Phone, Mail, Calendar, Shield, Key } from "lucide-react"
 
 interface UserData {
   name: string
@@ -13,6 +13,7 @@ interface UserData {
   role_id: number
   created_at: string
   updated_at: string
+  agent_code?: string // Tambahkan agent_code
 }
 
 export default function Profile() {
@@ -59,7 +60,8 @@ export default function Profile() {
           no_phone: currentUser.no_phone,
           role_id: currentUser.role_id,
           created_at: currentUser.created_at,
-          updated_at: currentUser.updated_at
+          updated_at: currentUser.updated_at,
+          agent_code: currentUser.agent_code || undefined // Ambil agent_code jika ada
         })
         setLoading(false)
       } catch (err) {
@@ -190,7 +192,29 @@ export default function Profile() {
                 </div>
               </div>
 
-              {/* Row 3: Dibuat Pada dan Terakhir Update */}
+              {/* Row 3: Agent Code (Hanya untuk Agent) */}
+              {user.role_id === 2 && user.agent_code && (
+                <div className="border-t border-gray-200 pt-8">
+                  <div className="space-y-3">
+                    <div className="flex items-center text-gray-500">
+                      <Key className="w-4 h-4 mr-2" />
+                      <span className="font-medium">Kode Agent</span>
+                    </div>
+                    <div className="pl-6">
+                      <div className="inline-block bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+                        <p className="text-black font-bold text-lg tracking-wider">
+                          {user.agent_code}
+                        </p>
+                      </div>
+                      <p className="text-gray-500 text-sm mt-2">
+                       Kode ini digunakan untuk mengajak nasabah bergabung melalui Anda.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Row 4: Dibuat Pada dan Terakhir Update */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-200 pt-8">
                 {/* Dibuat Pada */}
                 <div className="space-y-3">
