@@ -153,7 +153,7 @@ export default function AdminDashboard() {
         }
 
         const token = session.access_token;
-        const res = await fetch("https://be-loan.vercel.app/users", {
+        const res = await fetch("https://be-loan-production.up.railway.app/users", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
   const fetchApplications = async (token: string) => {
     try {
       setLoadingApplications(true);
-      const res = await fetch("https://be-loan.vercel.app/credit-applications", {
+      const res = await fetch("https://be-loan-production.up.railway.app/credit-applications", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`
@@ -226,7 +226,7 @@ export default function AdminDashboard() {
   const fetchApplicationStatuses = async (token: string) => {
     try {
       setLoadingStatus(true);
-      const res = await fetch("https://be-loan.vercel.app/application-status", {
+      const res = await fetch("https://be-loan-production.up.railway.app/application-status", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`
@@ -272,7 +272,7 @@ export default function AdminDashboard() {
 
       const token = session.access_token;
 
-      const res = await fetch("https://be-loan.vercel.app/application-status", {
+      const res = await fetch("https://be-loan-production.up.railway.app/application-status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

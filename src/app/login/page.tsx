@@ -64,7 +64,7 @@ export default function LoginPage() {
         const token = session?.access_token;
 
         if (token) {
-          const res = await fetch("https://be-loan.vercel.app/users", {
+          const res = await fetch("https://be-loan-production.up.railway.app/users", {
             method: "GET",
             headers: { Authorization: `Bearer ${token}` }
           });

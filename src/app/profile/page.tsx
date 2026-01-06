@@ -39,7 +39,7 @@ export default function Profile() {
         const userEmail = session.user?.email
 
         // Fetch user dari backend
-        const res = await fetch("https://be-loan.vercel.app/users", {
+        const res = await fetch("https://be-loan-production.up.railway.app/users", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`

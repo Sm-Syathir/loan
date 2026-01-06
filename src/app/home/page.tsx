@@ -82,7 +82,7 @@ export default function Home() {
         const token = session.access_token
 
         // Ambil data user dari endpoint Anda
-        const res = await fetch("https://be-loan.vercel.app/users", {
+        const res = await fetch("https://be-loan-production.up.railway.app/users", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
