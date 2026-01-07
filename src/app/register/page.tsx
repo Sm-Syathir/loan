@@ -107,13 +107,14 @@ export default function RegisterPage() {
     const role = formData.userType === "agent" ? "Agent" : "Nasabah";
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: { role },
-        },
-      });
+    const { data, error } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+      options: {
+      data: { role },
+      emailRedirectTo: `${window.location.origin}/verify`
+      },
+    });
 
       if (error) throw error;
       if (!data.user) throw new Error("User supabase tidak terbentuk");
