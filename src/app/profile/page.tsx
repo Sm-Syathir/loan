@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { supabase } from "../lib/supabase"
 import { useRouter } from "next/navigation"
 import Sidebar from "@/components/Sidebar"
-import { User, Phone, Mail, Calendar, Shield, Key, Edit2, Save, X } from "lucide-react"
+import { User, Phone, Mail, Calendar, Shield, Key, Edit2, X } from "lucide-react"
 
 interface UserData {
   name: string
@@ -14,32 +14,37 @@ interface UserData {
   created_at: string
   updated_at: string
   agent_code?: string
+  nasabah_code?: string
 }
 
 export default function Profile() {
   const [user, setUser] = useState<UserData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // State edit nama
   const [editingName, setEditingName] = useState(false)
   const [editNameValue, setEditNameValue] = useState("")
-  const [isSaving, setIsSaving] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
-  const [saveSuccess, setSaveSuccess] = useState(false)
-  
-  // State untuk form nasabah
+  const [isSavingName, setIsSavingName] = useState(false)
+  const [saveNameError, setSaveNameError] = useState<string | null>(null)
+  const [saveNameSuccess, setSaveNameSuccess] = useState(false)
+
+  // State kode agent untuk nasabah
   const [agentReferralCode, setAgentReferralCode] = useState("")
-  
+  const [isSavingAgentCode, setIsSavingAgentCode] = useState(false)
+  const [agentCodeError, setAgentCodeError] = useState<string | null>(null)
+  const [agentCodeSuccess, setAgentCodeSuccess] = useState(false)
+
   const router = useRouter()
 
+  // Fetch user data
   useEffect(() => {
     const fetchUser = async () => {
       try {
         setLoading(true)
         setError(null)
 
-        // Ambil session Supabase
         const { data: { session } } = await supabase.auth.getSession()
-
         if (!session) {
           router.replace("/login")
           return
@@ -48,7 +53,6 @@ export default function Profile() {
         const token = session.access_token
         const userEmail = session.user?.email
 
-        // Fetch user dari backend
         const res = await fetch("https://be-loan-production.up.railway.app/users", {
           method: "GET",
           headers: {
@@ -70,8 +74,15 @@ export default function Profile() {
           role_id: currentUser.role_id,
           created_at: currentUser.created_at,
           updated_at: currentUser.updated_at,
-          agent_code: currentUser.agent_code || undefined
+          agent_code: currentUser.agent_code || undefined,
+          nasabah_code: currentUser.nasabah_code || undefined,
         })
+
+        // Jika role nasabah dan ada nasabah_code, set ke input kode agent
+        if (currentUser.role_id === 3 && currentUser.nasabah_code) {
+          setAgentReferralCode(currentUser.nasabah_code)
+        }
+
         setLoading(false)
       } catch (err) {
         setError(err instanceof Error ? err.message : "Terjadi kesalahan")
@@ -82,42 +93,38 @@ export default function Profile() {
     fetchUser()
   }, [router])
 
+  // --- Edit Nama ---
   const handleEditNameClick = () => {
     if (!user) return
     setEditingName(true)
     setEditNameValue(user.name)
-    setSaveError(null)
-    setSaveSuccess(false)
+    setSaveNameError(null)
+    setSaveNameSuccess(false)
   }
 
-  const handleCancelEdit = () => {
+  const handleCancelEditName = () => {
     setEditingName(false)
     setEditNameValue("")
-    setSaveError(null)
+    setSaveNameError(null)
   }
 
   const handleSaveName = async () => {
     if (!user) return
 
     try {
-      setIsSaving(true)
-      setSaveError(null)
+      setIsSavingName(true)
+      setSaveNameError(null)
 
-      // Validasi
       if (!editNameValue.trim()) {
         throw new Error("Nama tidak boleh kosong")
       }
 
-      // Ambil session untuk token
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        throw new Error("Session tidak ditemukan")
-      }
+      if (!session) throw new Error("Session tidak ditemukan")
 
       const token = session.access_token
       const userId = session.user?.id
 
-      // Kirim update nama ke backend
       const res = await fetch(`https://be-loan-production.up.railway.app/users/${userId}`, {
         method: "PUT",
         headers: {
@@ -130,29 +137,66 @@ export default function Profile() {
       })
 
       const result = await res.json()
+      if (!res.ok) throw new Error(result.message || "Gagal memperbarui nama")
 
-      if (!res.ok) {
-        throw new Error(result.message || "Gagal memperbarui nama")
-      }
-
-      // Update state user
       setUser({
         ...user,
         name: editNameValue.trim(),
         updated_at: new Date().toISOString()
       })
 
-      setSaveSuccess(true)
+      setSaveNameSuccess(true)
       setEditingName(false)
       setEditNameValue("")
 
-      // Reset success message setelah 3 detik
-      setTimeout(() => setSaveSuccess(false), 3000)
-
+      setTimeout(() => setSaveNameSuccess(false), 3000)
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "Terjadi kesalahan")
+      setSaveNameError(err instanceof Error ? err.message : "Terjadi kesalahan")
     } finally {
-      setIsSaving(false)
+      setIsSavingName(false)
+    }
+  }
+
+  // --- Save Kode Agent (hanya nasabah) ---
+  const handleSaveAgentCode = async () => {
+    if (!user) return
+
+    try {
+      setIsSavingAgentCode(true)
+      setAgentCodeError(null)
+
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error("Session tidak ditemukan")
+
+      const token = session.access_token
+      const userId = session.user?.id
+
+      const res = await fetch(`https://be-loan-production.up.railway.app/users/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          nasabah_code: agentReferralCode.trim() || null
+        })
+      })
+
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.message || "Gagal memperbarui kode agent")
+
+      setUser({
+        ...user,
+        nasabah_code: agentReferralCode.trim() || undefined,
+        updated_at: new Date().toISOString()
+      })
+
+      setAgentCodeSuccess(true)
+      setTimeout(() => setAgentCodeSuccess(false), 3000)
+    } catch (err) {
+      setAgentCodeError(err instanceof Error ? err.message : "Terjadi kesalahan")
+    } finally {
+      setIsSavingAgentCode(false)
     }
   }
 
@@ -196,7 +240,6 @@ export default function Profile() {
 
   if (!user) return null
 
-  // Map role_id ke nama role
   const getRoleName = (roleId: number) => {
     switch(roleId) {
       case 1: return "Admin"
@@ -214,14 +257,13 @@ export default function Profile() {
 
       <main className="flex-1 p-6">
         <div className="max-w-4xl">
-          {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Profil Saya</h1>
             <p className="text-gray-500">Kelola informasi profil Anda di sini</p>
           </div>
 
-          {/* Success Message */}
-          {saveSuccess && (
+          {/* Success Message Nama */}
+          {saveNameSuccess && (
             <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
@@ -243,11 +285,9 @@ export default function Profile() {
               </h3>
             </div>
 
-            {/* Grid Informasi */}
             <div className="space-y-8">
-              {/* Row 1: Nama dan Email */}
+              {/* Row 1: Nama & Email */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* NAMA (BISA DIEDIT) */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center text-gray-500">
@@ -277,26 +317,28 @@ export default function Profile() {
                       <div className="flex gap-2">
                         <button
                           onClick={handleSaveName}
-                          disabled={isSaving || !editNameValue.trim()}
+                          disabled={isSavingName || !editNameValue.trim()}
                           className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          {isSaving ? "Menyimpan..." : "Simpan"}
+                          {isSavingName ? "Menyimpan..." : "Simpan"}
                         </button>
                         <button
-                          onClick={handleCancelEdit}
-                          disabled={isSaving}
+                          onClick={handleCancelEditName}
+                          disabled={isSavingName}
                           className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <X className="w-3 h-3" />
                         </button>
                       </div>
+                      {saveNameError && (
+                        <p className="text-red-600 mt-1">{saveNameError}</p>
+                      )}
                     </div>
                   ) : (
                     <p className="text-gray-900 font-semibold text-lg pl-6">{user.name}</p>
                   )}
                 </div>
 
-                {/* EMAIL (TIDAK BISA DIEDIT) */}
                 <div className="space-y-3">
                   <div className="flex items-center text-gray-500">
                     <Mail className="w-4 h-4 mr-2" />
@@ -306,9 +348,8 @@ export default function Profile() {
                 </div>
               </div>
 
-              {/* Row 2: No. HP dan Role */}
+              {/* Row 2: No. HP & Role */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-200 pt-8">
-                {/* NO. HP (TIDAK BISA DIEDIT) */}
                 <div className="space-y-3">
                   <div className="flex items-center text-gray-500">
                     <Phone className="w-4 h-4 mr-2" />
@@ -317,7 +358,6 @@ export default function Profile() {
                   <p className="text-gray-900 font-semibold text-lg pl-6">{user.no_phone}</p>
                 </div>
 
-                {/* ROLE (TIDAK BISA DIEDIT) */}
                 <div className="space-y-3">
                   <div className="flex items-center text-gray-500">
                     <Shield className="w-4 h-4 mr-2" />
@@ -327,7 +367,7 @@ export default function Profile() {
                 </div>
               </div>
 
-              {/* Row 3: Agent Code (Hanya untuk Agent) */}
+              {/* Row 3: Agent Code untuk Agent */}
               {user.role_id === 2 && user.agent_code && (
                 <div className="border-t border-gray-200 pt-8">
                   <div className="space-y-3">
@@ -342,55 +382,55 @@ export default function Profile() {
                         </p>
                       </div>
                       <p className="text-gray-500 text-sm mt-2">
-                       Kode ini digunakan untuk mengajak nasabah bergabung melalui Anda.
+                        Kode ini digunakan untuk mengajak nasabah bergabung melalui Anda.
                       </p>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Row 4: Form untuk Nasabah (Hanya role_id = 3) */}
+              {/* Row 4: Form Kode Agent Nasabah */}
               {user.role_id === 3 && (
                 <div className="border-t border-gray-200 pt-8">
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div className="flex items-center text-gray-500">
                       <Key className="w-4 h-4 mr-2" />
                       <span className="font-medium">Kode Agent</span>
                     </div>
-                    
-                    <div className="pl-6">
-                      <div className="space-y-3">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Masukkan Kode Agent (Opsional)
-                        </label>
-                        <input
-                          type="text"
-                          value={agentReferralCode}
-                          onChange={(e) => setAgentReferralCode(e.target.value.toUpperCase())}
-                          placeholder="Contoh: AG-MJKYP2"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
+
+                    <div className="pl-6 space-y-3">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Masukkan Kode Agent (Opsional)
+                      </label>
+                      <input
+                        type="text"
+                        value={agentReferralCode}
+                        onChange={(e) => setAgentReferralCode(e.target.value.toUpperCase())}
+                        placeholder="Contoh: AG-MJKYP2"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+
+                      <button
+                        onClick={handleSaveAgentCode}
+                        disabled={isSavingAgentCode}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSavingAgentCode ? "Menyimpan..." : "Simpan Kode"}
+                      </button>
+
+                      {agentCodeSuccess && (
+                        <p className="text-green-600 font-medium mt-1">Kode agent berhasil disimpan!</p>
+                      )}
+                      {agentCodeError && (
+                        <p className="text-red-600 font-medium mt-1">{agentCodeError}</p>
+                      )}
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Error Message untuk edit nama */}
-              {saveError && (
-                <div className="border-t border-gray-200 pt-8">
-                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <div className="flex items-center">
-                      <X className="w-5 h-5 text-red-600 mr-2" />
-                      <p className="text-red-700">{saveError}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Row 5: Dibuat Pada dan Terakhir Update */}
+              {/* Row 5: Created & Updated */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-200 pt-8">
-                {/* Dibuat Pada */}
                 <div className="space-y-3">
                   <div className="flex items-center text-gray-500">
                     <Calendar className="w-4 h-4 mr-2" />
@@ -415,7 +455,6 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {/* Terakhir Update */}
                 <div className="space-y-3">
                   <div className="flex items-center text-gray-500">
                     <Calendar className="w-4 h-4 mr-2" />
