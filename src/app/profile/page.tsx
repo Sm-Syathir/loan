@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { supabase } from "../lib/supabase"
 import { useRouter } from "next/navigation"
 import Sidebar from "@/components/Sidebar"
-import { User, Phone, Mail, Calendar, Shield, Key } from "lucide-react"
+import { User, Phone, Mail, Calendar, Shield, Key, Edit2, Save, X } from "lucide-react"
 
 interface UserData {
   name: string
@@ -13,13 +13,18 @@ interface UserData {
   role_id: number
   created_at: string
   updated_at: string
-  agent_code?: string // Tambahkan agent_code
+  agent_code?: string
 }
 
 export default function Profile() {
   const [user, setUser] = useState<UserData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [editingName, setEditingName] = useState(false)
+  const [editNameValue, setEditNameValue] = useState("")
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveSuccess, setSaveSuccess] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -61,7 +66,7 @@ export default function Profile() {
           role_id: currentUser.role_id,
           created_at: currentUser.created_at,
           updated_at: currentUser.updated_at,
-          agent_code: currentUser.agent_code || undefined // Ambil agent_code jika ada
+          agent_code: currentUser.agent_code || undefined
         })
         setLoading(false)
       } catch (err) {
@@ -72,6 +77,80 @@ export default function Profile() {
 
     fetchUser()
   }, [router])
+
+  const handleEditNameClick = () => {
+    if (!user) return
+    setEditingName(true)
+    setEditNameValue(user.name)
+    setSaveError(null)
+    setSaveSuccess(false)
+  }
+
+  const handleCancelEdit = () => {
+    setEditingName(false)
+    setEditNameValue("")
+    setSaveError(null)
+  }
+
+  const handleSaveName = async () => {
+    if (!user) return
+
+    try {
+      setIsSaving(true)
+      setSaveError(null)
+
+      // Validasi
+      if (!editNameValue.trim()) {
+        throw new Error("Nama tidak boleh kosong")
+      }
+
+      // Ambil session untuk token
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error("Session tidak ditemukan")
+      }
+
+      const token = session.access_token
+      const userId = session.user?.id
+
+      // Kirim update nama ke backend
+      const res = await fetch(`https://be-loan-production.up.railway.app/users/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: editNameValue.trim()
+        })
+      })
+
+      const result = await res.json()
+
+      if (!res.ok) {
+        throw new Error(result.message || "Gagal memperbarui nama")
+      }
+
+      // Update state user
+      setUser({
+        ...user,
+        name: editNameValue.trim(),
+        updated_at: new Date().toISOString()
+      })
+
+      setSaveSuccess(true)
+      setEditingName(false)
+      setEditNameValue("")
+
+      // Reset success message setelah 3 detik
+      setTimeout(() => setSaveSuccess(false), 3000)
+
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Terjadi kesalahan")
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -137,13 +216,25 @@ export default function Profile() {
             <p className="text-gray-500">Kelola informasi profil Anda di sini</p>
           </div>
 
-  
+          {/* Success Message */}
+          {saveSuccess && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-green-700 font-medium">Nama berhasil diperbarui!</p>
+                </div>
+              </div>
+            </div>
+          )}
 
-          {/* Informasi User */}
           <div className="bg-white rounded-xl border border-gray-200 p-8">
             <div className="mb-8">
               <h3 className="text-xl font-semibold text-gray-900 flex items-center">
-                <User className="w-5 h-5 mr-2 text-blue-600" />
                 Informasi User
               </h3>
             </div>
@@ -152,16 +243,56 @@ export default function Profile() {
             <div className="space-y-8">
               {/* Row 1: Nama dan Email */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Nama */}
+                {/* NAMA (BISA DIEDIT) */}
                 <div className="space-y-3">
-                  <div className="flex items-center text-gray-500">
-                    <User className="w-4 h-4 mr-2" />
-                    <span className="font-medium">Nama</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center text-gray-500">
+                      <User className="w-4 h-4 mr-2" />
+                      <span className="font-medium">Nama</span>
+                    </div>
+                    {!editingName && (
+                      <button
+                        onClick={handleEditNameClick}
+                        className="flex items-center text-black hover:text-blue-800 text-sm font-medium"
+                      >
+                        <Edit2 className="w-3 h-3 mr-1" />
+                        Edit
+                      </button>
+                    )}
                   </div>
-                  <p className="text-gray-900 font-semibold text-lg pl-6">{user.name}</p>
+                  
+                  {editingName ? (
+                    <div className="pl-6 space-y-3">
+                      <input
+                        type="text"
+                        value={editNameValue}
+                        onChange={(e) => setEditNameValue(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleSaveName}
+                          disabled={isSaving || !editNameValue.trim()}
+                          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isSaving ? "Menyimpan..." : "Simpan"}
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          disabled={isSaving}
+                          className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-gray-900 font-semibold text-lg pl-6">{user.name}</p>
+                  )}
                 </div>
 
-                {/* Email */}
+                {/* EMAIL (TIDAK BISA DIEDIT) */}
                 <div className="space-y-3">
                   <div className="flex items-center text-gray-500">
                     <Mail className="w-4 h-4 mr-2" />
@@ -173,7 +304,7 @@ export default function Profile() {
 
               {/* Row 2: No. HP dan Role */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-200 pt-8">
-                {/* No. HP */}
+                {/* NO. HP (TIDAK BISA DIEDIT) */}
                 <div className="space-y-3">
                   <div className="flex items-center text-gray-500">
                     <Phone className="w-4 h-4 mr-2" />
@@ -182,7 +313,7 @@ export default function Profile() {
                   <p className="text-gray-900 font-semibold text-lg pl-6">{user.no_phone}</p>
                 </div>
 
-                {/* Role */}
+                {/* ROLE (TIDAK BISA DIEDIT) */}
                 <div className="space-y-3">
                   <div className="flex items-center text-gray-500">
                     <Shield className="w-4 h-4 mr-2" />
@@ -201,7 +332,7 @@ export default function Profile() {
                       <span className="font-medium">Kode Agent</span>
                     </div>
                     <div className="pl-6">
-                      <div className="inline-block bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+                      <div className="inline-block border border-blue-200 rounded-lg px-4 py-3">
                         <p className="text-black font-bold text-lg tracking-wider">
                           {user.agent_code}
                         </p>
@@ -209,6 +340,18 @@ export default function Profile() {
                       <p className="text-gray-500 text-sm mt-2">
                        Kode ini digunakan untuk mengajak nasabah bergabung melalui Anda.
                       </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {saveError && (
+                <div className="border-t border-gray-200 pt-8">
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="flex items-center">
+                      <X className="w-5 h-5 text-red-600 mr-2" />
+                      <p className="text-red-700">{saveError}</p>
                     </div>
                   </div>
                 </div>
@@ -268,8 +411,6 @@ export default function Profile() {
               </div>
             </div>
           </div>
-
-      
         </div>
       </main>
     </div>
