@@ -404,13 +404,6 @@ export default function RegisterPage() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
                   Registrasi Berhasil!
                 </h2>
-                <p className="text-gray-600 mb-2">
-                  Cek email kamu untuk konfirmasi berikutnya.
-                </p>
-                <p className="text-sm text-gray-500">
-                  Kami telah mengirimkan email konfirmasi ke{" "}
-                  <span className="font-semibold">{formData.email}</span>
-                </p>
               </div>
 
               <div className="bg-blue-50 rounded-xl p-4 mb-6">
