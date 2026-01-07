@@ -239,13 +239,19 @@ export default function MonitorStatusKredit() {
 
     row.getCell(4).numFmt = '"Rp" #,##0'
 
-    worksheet.columns.forEach((col) => {
-      let max = 12
-      col.eachCell({ includeEmpty: true }, (cell) => {
-        max = Math.max(max, cell.value?.toString().length ?? 0)
+    worksheet.columns.forEach((col, colIndex) => {
+      let maxLength = 12
+
+      worksheet.eachRow({ includeEmpty: true }, (row) => {
+        const cell = row.getCell(colIndex + 1)
+        const value = cell.value ? String(cell.value) : ""
+        maxLength = Math.max(maxLength, value.length)
       })
-      col.width = max + 2
+
+      col.width = maxLength + 2
     })
+
+
 
     worksheet.views = [{ state: "frozen", ySplit: 2 }]
 
