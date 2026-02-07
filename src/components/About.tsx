@@ -48,27 +48,31 @@ export default function About() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-10 shadow-xl">
-          <div className="space-y-6 text-gray-700 leading-relaxed">
-            <p className="text-lg text-gray-950">
-              <span className="font-bold text-gray-950">SatuFin</span> adalah platform agregator keuangan berbasis teknologi yang menghubungkan pengguna dengan berbagai produk dan layanan keuangan dalam satu ekosistem digital yang terintegrasi.
-            </p>
-            
-            <p className="text-lg text-gray-950">
-              Kami menyederhanakan proses pencarian, perbandingan, dan akses layanan keuangan melalui satu platform yang <span className="text-blue-600 font-semibold">user-centric</span>, <span className="text-blue-600 font-semibold">scalable</span>, dan <span className="text-blue-600 font-semibold">data-driven</span>.
-            </p>
-            
-            <p className="text-lg text-gray-950">
-              Dengan bermitra bersama lebih dari <span className="font-bold text-gray-950">8+ lembaga keuangan terpercaya</span>, SatuFin hadir untuk menjawab kebutuhan masyarakat modern akan solusi keuangan yang cepat, transparan, dan terpercaya.
-            </p>
+        <div className="bg-white rounded-2xl p-10 shadow-xl max-w-4xl mx-auto text-center">
+  <div className="space-y-6 text-gray-700 leading-relaxed">
+    <p className="text-lg text-gray-950">
+      <span className="font-bold text-gray-950">SatuFin</span> adalah platform agregator keuangan berbasis teknologi yang menghubungkan pengguna dengan berbagai produk dan layanan keuangan dalam satu ekosistem digital yang terintegrasi.
+    </p>
+    
+    <p className="text-lg text-gray-950">
+      Kami menyederhanakan proses pencarian, perbandingan, dan akses layanan keuangan melalui satu platform yang{" "}
+      <span className="text-blue-600 font-semibold">user-centric</span>,{" "}
+      <span className="text-blue-600 font-semibold">scalable</span>, dan{" "}
+      <span className="text-blue-600 font-semibold">data-driven</span>.
+    </p>
+    
+    <p className="text-lg text-gray-950">
+      Dengan bermitra bersama lebih dari <span className="font-bold text-gray-950">8+ lembaga keuangan terpercaya</span>, SatuFin hadir untuk menjawab kebutuhan masyarakat modern akan solusi keuangan yang cepat, transparan, dan terpercaya.
+    </p>
 
-            <div className="pt-6 mt-6 border-t border-gray-200">
-              <p className="text-center text-xl font-bold text-black">
-                Satu Pintu untuk Semua Kebutuhan Finansial Anda
-              </p>
-            </div>
-          </div>
-        </div>
+    <div className="pt-6 mt-6 border-t border-gray-200">
+      <p className="text-center text-xl font-bold text-black">
+        Satu Pintu untuk Semua Kebutuhan Finansial Anda
+      </p>
+    </div>
+  </div>
+</div>
+
       </div>
     </section>
   );

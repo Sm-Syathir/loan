@@ -21,8 +21,8 @@ export default function Hero() {
       >
         {/* Heading */}
       <h1 className="text-balance text-3xl sm:text-4xl md:text-6xl font-bold leading-tight">
-        Satu Pintu untuk <br />
-        semua kebutuhan finansial
+        Satu Pintu Untuk <br />
+        Semua Kebutuhan Finansial
       </h1>
 
       {/* Subheading */}
@@ -74,9 +74,9 @@ export default function Hero() {
       <div className="mt-12 max-w-5xl w-full">
         <div className="bg-white rounded-2xl shadow-md grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-gray-200">
           {[
-            { icon: "coin", title: "Up to 80 Mio", desc: "Jumlah Insetif yang Dibayarkan" },
-            { icon: "chart", title: "4 +", desc: "Jumlah Customer yang Terbantu" },
-            { icon: "dollar", title: "Up to 5 Bio", desc: "Jumlah Pinjaman yang Tersalurkan" },
+            { icon: "coin", title: "Up to 100 Mio", desc: "Jumlah Insetif yang Dibayarkan" },
+            { icon: "chart", title: "10 +", desc: "Jumlah Customer yang Terbantu" },
+            { icon: "dollar", title: "Up to 10 Bio", desc: "Jumlah Pinjaman yang Tersalurkan" },
             { icon: "loading", title: "8 +", desc: "Mitra Lembaga Partner" },
           ].map((item, i) => (
             <div key={i} className="p-8 flex flex-col items-center text-center">

@@ -19,33 +19,17 @@ import GradientBackground from "@/components/Background";
 const techLogos = [
 
   {
-    node: <img src="/Mofi.png" alt="MOFI" className="h-18" />,
+    node: <img src="under maintencance.png" alt="MOFI" className="h-18" />,
     title: "MOFI",
   },
    {
-    node: <img src="/CIMB-Niaga.svg" alt="CIMB Niaga" className="h-10" />,
+    node: <img src="/under maintencance.png" alt="CIMB Niaga" className="h-18" />,
     title: "CIMB Niaga",
   },
    {
-    node: <img src="/kb-bank.png" alt="KB Bank" className="h-10" />,
+    node: <img src="/under maintencance.png" alt="KB Bank" className="h-18" />,
     title: "KB Bank",
   },  
-  {
-    node: <img src="/bpr.png" alt="BPR" className="h-18" />,
-    title: "BPR",
-  },
-  {
-    node: <img src="/bank-dki.png" alt="Bank DKI" className="h-9" />,
-    title: "Bank DKI",
-  },
-  {
-    node: <img src="/mandiri-taspen.png" alt="Mandiri Taspen" className="h-18" />,
-    title: "Mandiri Taspen",
-  },
-  {
-    node: <img src="/kredit-plus.webp" alt="Kredit Plus" className="h-12" />,
-    title: "Kredit Plus",
-  },
 ];
 
 export default function LandingPage() {

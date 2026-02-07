@@ -10,8 +10,8 @@ export default function Logo() {
       <Image
         src="/satufin-logo 1.svg"
         alt="Logo"
-        width={100}
-        height={100}
+        width={155}
+        height={155}
         />
     )
 }

@@ -13,7 +13,7 @@ import { supabase } from "@/app/lib/supabase";
 
 
 const menuItems = [
-  { name: "Tentang Kami", href: "#About", scroll: true },
+  { name: "Tentang Satufin", href: "#About", scroll: true },
   { name: "Produk", href: "#product-section", scroll: true },
   { name: "Blog", href: "", blog: true },
 
