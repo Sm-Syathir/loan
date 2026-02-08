@@ -20,7 +20,6 @@ export default function Footer() {
             </p>
           </div>
   
-          {/* Kolom 2 - Layanan */}
           {/* <div>
             <hr className="border-gray-400 mb-6 w-20" />
             <ul className="space-y-2 text-sm">
