@@ -19,7 +19,8 @@ export default function Footer() {
               Our Customer Service team is available weekdays, 8:30 AM to 5:30 PM (WIB).
             </p>
           </div>
-  
+
+          {/* kolom 3 */}
           {/* <div>
             <hr className="border-gray-400 mb-6 w-20" />
             <ul className="space-y-2 text-sm">
