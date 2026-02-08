@@ -35,9 +35,7 @@ export default function Footer() {
           <div>
             <hr className="border-gray-400 mb-6 w-20" />
             <p className="text-sm leading-relaxed">
-              SatuFin adalah platform agregator keuangan berbasis teknologi yang menghubungkan pengguna dengan berbagai produk dan layanan keuangan dalam satu ekosistem digital yang terintegrasi.
-              Kami menyederhanakan proses pencarian, perbandingan, dan akses layanan keuangan melalui satu platform yang user-centric, scalable, dan data-driven.
-              Dengan bermitra bersama lebih dari 8+ lembaga keuangan terpercaya, SatuFin hadir untuk menjawab kebutuhan masyarakat modern akan solusi keuangan yang cepat, transparan, dan terpercaya.
+              Kami menghubungkan Anda dengan berbagai solusi keuangan dalam satu platform yang simpel dan efisien
             </p>
           </div>
         </div>
