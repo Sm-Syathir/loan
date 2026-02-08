@@ -1,12 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { supabase } from "../lib/supabase"
 import { useRouter } from "next/navigation"
 import Sidebar from "@/components/Sidebar"
 import { User, Phone, Mail, Calendar, Shield, Key, Edit2, X } from "lucide-react"
 
 interface UserData {
+  id: string
   name: string
   email: string
   no_phone: string
@@ -44,43 +44,56 @@ export default function Profile() {
         setLoading(true)
         setError(null)
 
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session) {
+        const token = localStorage.getItem("token")
+        
+        if (!token) {
           router.replace("/login")
           return
         }
 
-        const token = session.access_token
-        const userEmail = session.user?.email
-
-        const res = await fetch("https://be-loan-production.up.railway.app/users", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`
+        const res = await fetch(
+          "https://mediumspringgreen-wallaby-250953.hostingersite.com/api/v1/auth/me",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
           }
-        })
+        )
 
-        if (!res.ok) throw new Error("Gagal mengambil data user")
+        if (!res.ok) {
+          if (res.status === 401) {
+            localStorage.removeItem("token")
+            localStorage.removeItem("user")
+            router.replace("/login")
+            return
+          }
+          throw new Error("Gagal mengambil data user")
+        }
 
-        const json = await res.json()
-        const currentUser = json.data.find((u: any) => u.email === userEmail)
+        const result = await res.json()
+        
+        if (!result.success || !result.data) {
+          throw new Error("Data user tidak ditemukan")
+        }
 
-        if (!currentUser) throw new Error("User tidak ditemukan")
+        const userData = result.data
 
         setUser({
-          name: currentUser.name,
-          email: currentUser.email,
-          no_phone: currentUser.no_phone,
-          role_id: currentUser.role_id,
-          created_at: currentUser.created_at,
-          updated_at: currentUser.updated_at,
-          agent_code: currentUser.agent_code || undefined,
-          nasabah_code: currentUser.nasabah_code || undefined,
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+          no_phone: userData.no_phone,
+          role_id: userData.role_id,
+          created_at: userData.created_at,
+          updated_at: userData.updated_at,
+          agent_code: userData.agent_code || undefined,
+          nasabah_code: userData.nasabah_code || undefined,
         })
 
         // Jika role nasabah dan ada nasabah_code, set ke input kode agent
-        if (currentUser.role_id === 3 && currentUser.nasabah_code) {
-          setAgentReferralCode(currentUser.nasabah_code)
+        if (userData.role_id === 3 && userData.nasabah_code) {
+          setAgentReferralCode(userData.nasabah_code)
         }
 
         setLoading(false)
@@ -119,25 +132,34 @@ export default function Profile() {
         throw new Error("Nama tidak boleh kosong")
       }
 
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error("Session tidak ditemukan")
+      const token = localStorage.getItem("token")
+      if (!token) throw new Error("Session tidak ditemukan")
 
-      const token = session.access_token
-      const userId = session.user?.id
-
-      const res = await fetch(`https://be-loan-production.up.railway.app/users/${userId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          name: editNameValue.trim()
-        })
-      })
+      const res = await fetch(
+        `https://mediumspringgreen-wallaby-250953.hostingersite.com/api/v1/users/${user.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            name: editNameValue.trim()
+          })
+        }
+      )
 
       const result = await res.json()
-      if (!res.ok) throw new Error(result.message || "Gagal memperbarui nama")
+      
+      if (!res.ok) {
+        if (res.status === 401) {
+          localStorage.removeItem("token")
+          localStorage.removeItem("user")
+          router.replace("/login")
+          return
+        }
+        throw new Error(result.message || "Gagal memperbarui nama")
+      }
 
       setUser({
         ...user,
@@ -165,25 +187,34 @@ export default function Profile() {
       setIsSavingAgentCode(true)
       setAgentCodeError(null)
 
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error("Session tidak ditemukan")
+      const token = localStorage.getItem("token")
+      if (!token) throw new Error("Session tidak ditemukan")
 
-      const token = session.access_token
-      const userId = session.user?.id
-
-      const res = await fetch(`https://be-loan-production.up.railway.app/users/${userId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          nasabah_code: agentReferralCode.trim() || null
-        })
-      })
+      const res = await fetch(
+        `https://mediumspringgreen-wallaby-250953.hostingersite.com/api/v1/users/${user.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            nasabah_code: agentReferralCode.trim() || null
+          })
+        }
+      )
 
       const result = await res.json()
-      if (!res.ok) throw new Error(result.message || "Gagal memperbarui kode agent")
+      
+      if (!res.ok) {
+        if (res.status === 401) {
+          localStorage.removeItem("token")
+          localStorage.removeItem("user")
+          router.replace("/login")
+          return
+        }
+        throw new Error(result.message || "Gagal memperbarui kode agent")
+      }
 
       setUser({
         ...user,

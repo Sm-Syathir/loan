@@ -1,19 +1,15 @@
-'use client'
+// 'use client'
 
-import { useEffect } from 'react'
-import { supabase } from '../lib/supabase'
-import { useRouter } from 'next/navigation'
+// import { useEffect } from 'react'
+// import { useRouter } from 'next/navigation'
 
-export default function VerifyPage() {
-  const router = useRouter()
+// export default function VerifyPage() {
+//   const router = useRouter()
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        router.replace('/login')
-      }
-    })
-  }, [])
+//   useEffect(() => {
+//     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+//     if (token) router.replace('/login')
+//   }, [])
 
-  return <p>Memverifikasi email...</p>
-}
+//   return <p>Memverifikasi email...</p>
+// }

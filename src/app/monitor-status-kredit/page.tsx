@@ -2,14 +2,10 @@
 
 import Sidebar from "@/components/Sidebar"
 import { useEffect, useState } from "react"
-import { supabase } from "../lib/supabase"
 import { useRouter } from "next/navigation"
-import { ChevronDown, ChevronUp } from "lucide-react"
-import { Download } from "lucide-react"
+import { ChevronDown, ChevronUp, Download } from "lucide-react"
 import ExcelJS from "exceljs"
 import { saveAs } from "file-saver"
-
-
 
 // Helper format tanggal + jam
 const formatDateTime = (isoString?: string) => {
@@ -25,9 +21,6 @@ const formatDateTime = (isoString?: string) => {
   })
 }
 
-// FORMAT TIMELINE
-
-
 // Timeline components
 const TimelineItem = ({
   title,
@@ -42,8 +35,9 @@ const TimelineItem = ({
 }) => (
   <div className="flex flex-col items-center text-center w-24">
     <div
-      className={`w-4 h-4 rounded-full mb-2 ${danger ? "bg-red-500" : active ? "bg-blue-500" : "bg-gray-300"
-        }`}
+      className={`w-4 h-4 rounded-full mb-2 ${
+        danger ? "bg-red-500" : active ? "bg-blue-500" : "bg-gray-300"
+      }`}
     />
     <div className="text-xs font-semibold">{title}</div>
     <div className="text-[10px] text-gray-500 mt-1">{time || "-"}</div>
@@ -87,17 +81,15 @@ export default function MonitorStatusKredit() {
         setLoading(true)
         setError(null)
 
-        const { data, error: sessionError } = await supabase.auth.getSession()
+        const token = localStorage.getItem("token")
 
-        if (sessionError || !data.session) {
+        if (!token) {
           router.replace("/login")
           return
         }
 
-        const token = data.session.access_token
-
         const res = await fetch(
-          "https://be-loan-production.up.railway.app/credit-applications/my",
+          "https://mediumspringgreen-wallaby-250953.hostingersite.com/api/v1/credit-applications/my",
           {
             method: "GET",
             headers: {
@@ -108,6 +100,12 @@ export default function MonitorStatusKredit() {
         )
 
         if (!res.ok) {
+          if (res.status === 401) {
+            localStorage.removeItem("token")
+            localStorage.removeItem("user")
+            router.replace("/login")
+            return
+          }
           const text = await res.text()
           throw new Error(text || "Gagal mengambil data")
         }
@@ -117,10 +115,11 @@ export default function MonitorStatusKredit() {
         if (isMounted) {
           setItems(Array.isArray(json.data) ? json.data : [])
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("MONITOR FETCH ERROR:", err)
         if (isMounted) {
-          setError(err.message || "Terjadi kesalahan")
+          const errorMessage = err instanceof Error ? err.message : "Terjadi kesalahan"
+          setError(errorMessage)
         }
       } finally {
         if (isMounted) {
@@ -178,18 +177,18 @@ export default function MonitorStatusKredit() {
       "Tanggal Hasil",
     ]
 
-      ;[1, 2].forEach((row) => {
-        worksheet.getRow(row).eachCell((cell) => {
-          cell.font = { bold: true, color: { argb: "FFFFFFFF" } }
-          cell.alignment = { horizontal: "center", vertical: "middle" }
-          cell.fill = {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "FF2563EB" },
-          }
-          applyBorder(cell)
-        })
+    ;[1, 2].forEach((row) => {
+      worksheet.getRow(row).eachCell((cell) => {
+        cell.font = { bold: true, color: { argb: "FFFFFFFF" } }
+        cell.alignment = { horizontal: "center", vertical: "middle" }
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FF2563EB" },
+        }
+        applyBorder(cell)
       })
+    })
 
     const latestStatus =
       item.statuses
@@ -251,22 +250,14 @@ export default function MonitorStatusKredit() {
       col.width = maxLength + 2
     })
 
-
-
     worksheet.views = [{ state: "frozen", ySplit: 2 }]
 
     const buffer = await workbook.xlsx.writeBuffer()
     saveAs(
       new Blob([buffer]),
-      "Pengajuan Peminjaman Satufin.xlsx"
+      `Pengajuan_${item.kode_pengajuan}_Satufin.xlsx`
     )
   }
-
-
-
-
-
-
 
   return (
     <div className="min-h-screen bg-white flex">
@@ -274,8 +265,6 @@ export default function MonitorStatusKredit() {
 
       <main className="flex-1 p-8">
         <h1 className="text-2xl font-bold mb-6">Monitor Status Kredit</h1>
-
-        
 
         {loading && <p className="text-gray-500">Memuat data...</p>}
 
@@ -337,7 +326,7 @@ export default function MonitorStatusKredit() {
                   </div>
 
                   {/* BUTTON DOWNLOAD EXCEL */}
-                  {/* <div className="mt-4 text-right">
+                  <div className="mt-4 text-right">
                     <button
                       onClick={() => handleDownload(it)}
                       className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow cursor-pointer hover:bg-blue-700 transition"
@@ -345,7 +334,7 @@ export default function MonitorStatusKredit() {
                       <Download size={16} />
                       Download
                     </button>
-                  </div> */}
+                  </div>
 
                   {/* BUTTON SHOW MORE */}
                   <div className="mt-4 text-center">
@@ -366,18 +355,19 @@ export default function MonitorStatusKredit() {
                   </div>
 
                   <div
-                    className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-96 mt-4" : "max-h-0"
-                      }`}
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                      open ? "max-h-96 mt-4" : "max-h-0"
+                    }`}
                   >
                     {/* Timeline */}
                     <h3 className="text-center items-center mb-6 font-semibold">Detail Status</h3>
                     <div className="flex items-start justify-between px-2 mt-12">
                       <TimelineItem title="Pengajuan" time={waktuPengajuan} active />
                       <TimelineLine active={!!waktuProses} />
-                      <TimelineItem title="" time={waktuProses} active={!!waktuProses} />
+                      <TimelineItem title="Diproses" time={waktuProses} active={!!waktuProses} />
                       <TimelineLine active={!!waktuHasil} />
                       <TimelineItem
-                        title={latestStatus?.status === "DITOLAK" ? "Ditolak" : ""}
+                        title={latestStatus?.status === "DITOLAK" ? "Ditolak" : latestStatus?.status === "DITERIMA" ? "Diterima" : "Hasil"}
                         time={waktuHasil}
                         active={!!waktuHasil}
                         danger={latestStatus?.status === "DITOLAK"}
