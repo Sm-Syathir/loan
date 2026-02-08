@@ -1,6 +1,6 @@
 "use client";
 
-import { Book, Home, LogOut, User } from "lucide-react";
+import { Book, Home, LogOut,User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";

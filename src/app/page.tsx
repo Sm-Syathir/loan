@@ -20,11 +20,7 @@ const techLogos = [
   {
     node: <img src="under maintencance.png" alt="MOFI" className="h-18" />,
     title: "KB Bank",
-  },
-  {
-    node: <img src="under maintencance.png" alt="MOFI" className="h-18" />,
-    title: "BPR",
-  },
+  },  
 ];
 
 export default function LandingPage() {
