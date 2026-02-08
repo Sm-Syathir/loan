@@ -10,32 +10,20 @@ import Image from "next/image";
 // daftar logo teknologi
 const techLogos = [
   {
-    node: <Image src="/Mofi.png" alt="MOFI" width={100} height={72} className="h-18" />,
+    node: <img src="under maintencance.png" alt="MOFI" className="h-18" />,
     title: "MOFI",
   },
   {
-    node: <Image src="/CIMB-Niaga.svg" alt="CIMB Niaga" width={100} height={40} className="h-10" />,
+    node: <img src="under maintencance.png" alt="MOFI" className="h-18" />,
     title: "CIMB Niaga",
   },
   {
-    node: <Image src="/kb-bank.png" alt="KB Bank" width={100} height={40} className="h-10" />,
+    node: <img src="under maintencance.png" alt="MOFI" className="h-18" />,
     title: "KB Bank",
   },
   {
-    node: <Image src="/bpr.png" alt="BPR" width={100} height={72} className="h-18" />,
+    node: <img src="under maintencance.png" alt="MOFI" className="h-18" />,
     title: "BPR",
-  },
-  {
-    node: <Image src="/bank-dki.png" alt="Bank DKI" width={100} height={36} className="h-9" />,
-    title: "Bank DKI",
-  },
-  {
-    node: <Image src="/mandiri-taspen.png" alt="Mandiri Taspen" width={100} height={72} className="h-18" />,
-    title: "Mandiri Taspen",
-  },
-  {
-    node: <Image src="/kredit-plus.webp" alt="Kredit Plus" width={100} height={48} className="h-12" />,
-    title: "Kredit Plus",
   },
 ];
 
