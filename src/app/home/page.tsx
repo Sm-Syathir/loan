@@ -15,13 +15,18 @@ import { useEffect, useState } from "react"
 
 // daftar logo teknologi
 const techLogos = [
-  { node: <img src="/Mofi.png" alt="MOFI" className="h-18" />, title: "MOFI" },
-  { node: <img src="/CIMB-Niaga.svg" alt="CIMB Niaga" className="h-10" />, title: "CIMB Niaga" },
-  { node: <img src="/kb-bank.png" alt="KB Bank" className="h-10" />, title: "KB Bank" },
-  { node: <img src="/bpr.png" alt="BPR" className="h-18" />, title: "BPR" },
-  { node: <img src="/bank-dki.png" alt="Bank DKI" className="h-9" />, title: "Bank DKI" },
-  { node: <img src="/mandiri-taspen.png" alt="Mandiri Taspen" className="h-18" />, title: "Mandiri Taspen" },
-  { node: <img src="/kredit-plus.webp" alt="Kredit Plus" className="h-12" />, title: "Kredit Plus" },
+  {
+    node: <img src="under maintencance.png" alt="MOFI" className="h-18" />,
+    title: "MOFI",
+  },
+  {
+    node: <img src="under maintencance.png" alt="MOFI" className="h-18" />,
+    title: "CIMB Niaga",
+  },
+  {
+    node: <img src="under maintencance.png" alt="MOFI" className="h-18" />,
+    title: "KB Bank",
+  },  
 ];
 
 export default function Home() {
