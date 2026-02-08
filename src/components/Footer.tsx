@@ -8,19 +8,20 @@ export default function Footer() {
             <hr className="border-gray-400 mb-6 w-20" />
             <h3 className="font-semibold mb-4">Hubungi Kami</h3>
             <p className="text-sm leading-relaxed">
-              QP Office. Perkantoran Tanjung Mas Raya,  <br />
-              blok B1 nomor 44, RT.002/RW.001. Tanjung Barat,  <br />
-              Jagakarsa, Jakarta Selatan.12530
+              QP Office.Perkantoran Tanjung Mas Raya,  <br />
+              blok B1 nomor 44, RT.002/RW.001.
+              Tanjung Barat,  <br />
+              Jagakarsa, Jakarta Selatan.125302
             </p>
             <p className="text-sm mt-4">Phone: 081196963698</p>
-            <p className="text-sm">Email: admin@satufin.com</p>
+            <p className="text-sm">Email: Emailnya : admin@satufin.com</p>
             <p className="text-sm mt-2">
               Our Customer Service team is available weekdays, 8:30 AM to 5:30 PM (WIB).
             </p>
           </div>
-  
-          {/* Kolom 2 - Layanan
-          <div>
+
+          {/* kolom 3 */}
+          {/* <div>
             <hr className="border-gray-400 mb-6 w-20" />
             <ul className="space-y-2 text-sm">
               <li>Personal loan</li>
