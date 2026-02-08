@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/app/lib/supabase";
 import { formatRupiah } from "@/app/lib/utils";
 import {
   LogOut,
@@ -146,18 +145,19 @@ export default function AdminDashboard() {
   ];
 
 
+  const API_BASE = "https://mediumspringgreen-wallaby-250953.hostingersite.com/api/v1";
+
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-        if (!session) {
+        if (!token) {
           router.replace("/login");
           return;
         }
 
-        const token = session.access_token;
-        const res = await fetch("https://be-loan-production.up.railway.app/users", {
+        const res = await fetch(`${API_BASE}/users`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`
@@ -166,7 +166,9 @@ export default function AdminDashboard() {
 
         if (res.ok) {
           const json = await res.json();
-          const currentUser = json.data.find((u: any) => (u.email || '').toLowerCase() === (session.user?.email || '').toLowerCase());
+          const userFromStorage = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+          const sessionEmail = userFromStorage ? (JSON.parse(userFromStorage)?.email || "").toLowerCase() : "";
+          const currentUser = json.data?.find((u: any) => (u.email || "").toLowerCase() === sessionEmail);
 
           if (!currentUser) {
             setToastMessage("User tidak ditemukan atau tidak terdaftar");
@@ -209,7 +211,7 @@ export default function AdminDashboard() {
   const fetchApplications = async (token: string) => {
     try {
       setLoadingApplications(true);
-      const res = await fetch("https://be-loan-production.up.railway.app/credit-applications", {
+      const res = await fetch(`${API_BASE}/credit-applications`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`
@@ -230,7 +232,7 @@ export default function AdminDashboard() {
   const fetchApplicationStatuses = async (token: string) => {
     try {
       setLoadingStatus(true);
-      const res = await fetch("https://be-loan-production.up.railway.app/application-status", {
+      const res = await fetch(`${API_BASE}/application-status`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`
@@ -271,12 +273,10 @@ export default function AdminDashboard() {
     }
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) return;
 
-      const token = session.access_token;
-
-      const res = await fetch("https://be-loan-production.up.railway.app/application-status", {
+      const res = await fetch(`${API_BASE}/application-status`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -318,7 +318,8 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
       router.push("/");
     } catch (error) {
       console.error("Logout error:", error);
@@ -342,11 +343,11 @@ export default function AdminDashboard() {
 
   const handleRefresh = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (token) {
         await Promise.all([
-          fetchApplications(session.access_token),
-          fetchApplicationStatuses(session.access_token)
+          fetchApplications(token),
+          fetchApplicationStatuses(token)
         ]);
       }
     } catch (error) {

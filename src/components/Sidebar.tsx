@@ -1,10 +1,9 @@
 "use client";
 
-import { Book, Home, User, LogOut } from "lucide-react";
+import { Book, Home, LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { supabase } from "@/app/lib/supabase";
 import { Button } from "@/components/ui/Button";
 import Logo from "./Logo";
 
@@ -21,21 +20,17 @@ export default function Sidebar() {
 
   const handleLogout = async () => {
     try {
-      // Sign out dari Supabase
-      await supabase.auth.signOut();
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     } catch (e) {
-      console.error('Supabase signOut error', e);
+      console.error("Logout error", e);
     }
-    
     try {
-      // Sign out dari next-auth jika digunakan
       await signOut({ redirect: false });
     } catch (e) {
-      console.error('next-auth signOut error', e);
+      console.error("next-auth signOut error", e);
     }
-    
-    // Redirect ke halaman home
-    router.push('/');
+    router.push("/");
   };
 
   return (

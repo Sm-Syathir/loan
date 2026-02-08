@@ -3,10 +3,9 @@
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { ArrowRight, ChevronDown, Eye, EyeOff, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { ArrowRight, Eye, EyeOff, X } from "lucide-react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "../lib/supabase";
 
 interface FormErrors {
   name?: string;
@@ -121,39 +120,30 @@ export default function RegisterPage() {
       return;
     }
 
-    // Admin TIDAK dibuat lewat register
-    const role = formData.userType === "agent" ? "Agent" : "Nasabah";
+    // role_id: 2 untuk Agent, 3 untuk Nasabah (sesuai backend)
+    const role_id = formData.userType === "agent" ? 2 : 3;
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: { role },
-          emailRedirectTo: `${window.location.origin}/verify`,
-        },
-      });
-
-      if (error) throw error;
-      if (!data.user) throw new Error("User supabase tidak terbentuk");
-
       const res = await fetch(
-        "https://be-loan-production.up.railway.app/users",
+        "https://mediumspringgreen-wallaby-250953.hostingersite.com/api/v1/auth/register",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            id: data.user.id,
             name: formData.name,
             email: formData.email,
             no_phone: formData.no_phone,
-            role_id: formData.userType === "agent" ? 2 : 3,
+            password: formData.password,
+            role_id: role_id,
           }),
         },
       );
 
       const result = await res.json();
-      if (!res.ok) throw new Error(result.message);
+
+      if (!res.ok) {
+        throw new Error(result.message || "Registrasi gagal");
+      }
 
       // Tampilkan popup sukses
       setShowSuccessPopup(true);
@@ -167,14 +157,14 @@ export default function RegisterPage() {
         userType: "",
       });
 
-      // Jangan langsung redirect ke login, biarkan user membaca popup
-      // Auto-redirect setelah 5 detik
+      // Auto-redirect setelah 3 detik
       setTimeout(() => {
         router.push("/login");
-      }, 1000);
-    } catch (err: any) {
+      }, 3000);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Registrasi gagal";
       setErrors({
-        email: err.message || "Registrasi gagal",
+        email: errorMessage,
       });
     }
   };
@@ -375,7 +365,7 @@ export default function RegisterPage() {
         </section>
 
         {/* Success Popup Modal */}
-        {/* {showSuccessPopup && (
+        {showSuccessPopup && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
             <div className="relative bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
               <button
@@ -397,7 +387,7 @@ export default function RegisterPage() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      d="M5 13l4 4L19 7"
                     />
                   </svg>
                 </div>
@@ -405,38 +395,11 @@ export default function RegisterPage() {
                   Registrasi Berhasil!
                 </h2>
                 <p className="text-gray-600 mb-2">
-                  Cek email kamu untuk konfirmasi berikutnya.
+                  Akun Anda berhasil dibuat.
                 </p>
                 <p className="text-sm text-gray-500">
-                  Kami telah mengirimkan email konfirmasi ke{" "}
-                  <span className="font-semibold">{formData.email}</span>
+                  Silakan login untuk melanjutkan
                 </p>
-              </div>
-
-              <div className="bg-blue-50 rounded-xl p-4 mb-6">
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-blue-600 mt-0.5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-blue-700">
-                      Buka email kamu dan klik link konfirmasi untuk
-                      mengaktifkan akun
-                    </p>
-                  </div>
-                </div>
               </div>
 
               <div className="space-y-3">
@@ -447,12 +410,12 @@ export default function RegisterPage() {
                   Lanjut ke Login
                 </Button>
                 <p className="text-center text-sm text-gray-500">
-                  Akan diarahkan ke login dalam 5 detik
+                  Akan diarahkan ke login dalam 3 detik
                 </p>
               </div>
             </div>
           </div>
-        )} */}
+        )}
       </main>
     </div>
   );

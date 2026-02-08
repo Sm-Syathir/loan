@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import {supabase} from '@/app/lib/supabase'
+
+const API_BASE = "https://mediumspringgreen-wallaby-250953.hostingersite.com/api/v1"
 
 export default function AuthForm({ mode }: { mode: 'login' | 'register' }) {
   const router = useRouter()
@@ -17,13 +18,24 @@ export default function AuthForm({ mode }: { mode: 'login' | 'register' }) {
     setError(null)
     try {
       if (mode === 'register') {
-        const { error } = await supabase.auth.signUp({ email, password })
-        if (error) throw error
-        // optional: redirect to verify notice or login
+        const res = await fetch(`${API_BASE}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, name: email.split('@')[0] }),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.message || 'Registrasi gagal')
         router.push('/login')
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw error
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.message || 'Login gagal')
+        if (data.data?.token) localStorage.setItem('token', data.data.token)
+        if (data.data?.user) localStorage.setItem('user', JSON.stringify(data.data.user))
         router.push('/')
       }
     } catch (err: any) {

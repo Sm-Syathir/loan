@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/app/lib/supabase";
 import {
   LogOut,
   Home,
@@ -38,21 +37,19 @@ export default function AllUsersPage() {
   const [filterRole, setFilterRole] = useState<string>("all");
   const router = useRouter();
 
+  const API_BASE = "https://mediumspringgreen-wallaby-250953.hostingersite.com/api/v1";
+
   useEffect(() => {
     const checkSessionAndFetchUsers = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-        if (!session) {
+        if (!token) {
           router.replace("/login");
           return;
         }
 
-        // Ambil token untuk fetch data users
-        const token = session.access_token;
-        
-        // Fetch data users dari API
-        const res = await fetch("https://be-loan-production.up.railway.app/users", {
+        const res = await fetch(`${API_BASE}/users`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`
@@ -61,9 +58,9 @@ export default function AllUsersPage() {
 
         if (res.ok) {
           const json = await res.json();
-
-          // Cari current user dari response untuk cek role
-          const currentUser = json.data.find((u: any) => (u.email || '').toLowerCase() === (session.user?.email || '').toLowerCase());
+          const userFromStorage = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+          const sessionEmail = userFromStorage ? (JSON.parse(userFromStorage)?.email || "").toLowerCase() : "";
+          const currentUser = json.data?.find((u: any) => (u.email || "").toLowerCase() === sessionEmail);
 
           if (!currentUser) {
             alert('User tidak ditemukan atau tidak terdaftar');
@@ -131,7 +128,8 @@ export default function AllUsersPage() {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
       router.push("/");
     } catch (error) {
       console.error("Logout error:", error);

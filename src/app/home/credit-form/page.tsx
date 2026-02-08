@@ -3,11 +3,10 @@
 import NavbarHome from "@/components/NavbarHome"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button";
-import { ArrowRight, ChevronDown, Eye, EyeOff, X, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowRight, CheckCircle, AlertCircle, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { supabase } from "../../lib/supabase";
 
 interface FormErrors {
   nik?: string;
@@ -20,7 +19,7 @@ interface FormErrors {
   userJaminan?: string;
 }
 
-// Tambahkan komponen Toast/Modal di bagian atas komponen
+// Komponen Modal dan Toast
 const SuccessModal = ({ message, onClose }: { message: string; onClose: () => void }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -96,8 +95,6 @@ const LoadingOverlay = ({ message }: { message: string }) => {
 };
 
 export default function CreditForm() {
-  // ... (kode creditOptions, jaminanOptions, formData, errors, step, isLoading tetap sama)
-
   const creditOptions = [
     {
       value: 'KREDIT_PRODUKTIF',
@@ -170,9 +167,10 @@ export default function CreditForm() {
 
   // Check authentication on mount
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+    const checkAuth = () => {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
         setModalMessage('Anda harus login terlebih dahulu');
         setShowWarningToast(true);
         setTimeout(() => {
@@ -182,9 +180,6 @@ export default function CreditForm() {
     };
     checkAuth();
   }, [router]);
-
-  // ... (handleChange, validateForm, validateCredit, validateJaminan, 
-  // handleFormContinue, handleCreditContinue, handleBack tetap sama)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -288,46 +283,61 @@ export default function CreditForm() {
     setIsLoading(true);
 
     try {
-      // Get session from Supabase
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      // Ambil token dari localStorage
+      const token = localStorage.getItem("token");
       
-      if (sessionError || !session) {
+      if (!token) {
         setModalMessage('Sesi Anda telah berakhir. Silakan login kembali.');
         setShowErrorModal(true);
         setIsLoading(false);
         return;
       }
 
-      const response = await fetch('https://be-loan-production.up.railway.app/credit-applications', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          nik: formData.nik,
-          nama_lengkap: formData.name,
-          tempat_lahir: formData.tempat_lahir,
-          tanggal_lahir: formData.tanggal_lahir,
-          alamat: formData.alamat,
-          jenis_kredit: formData.userChoice,
-          plafond: Number(formData.plafond),
-          jaminan: formData.userJaminan,
-        }),
-      });
+      const response = await fetch(
+        'https://mediumspringgreen-wallaby-250953.hostingersite.com/api/v1/credit-applications',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            nik: formData.nik,
+            nama_lengkap: formData.name,
+            tempat_lahir: formData.tempat_lahir,
+            tanggal_lahir: formData.tanggal_lahir,
+            alamat: formData.alamat,
+            jenis_kredit: formData.userChoice,
+            plafond: Number(formData.plafond),
+            jaminan: formData.userJaminan,
+          }),
+        }
+      );
 
       const result = await response.json();
 
       if (!response.ok) {
+        // Jika unauthorized, redirect ke login
+        if (response.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          setModalMessage('Sesi Anda telah berakhir. Silakan login kembali.');
+          setShowErrorModal(true);
+          setTimeout(() => {
+            router.push('/login');
+          }, 2000);
+          return;
+        }
         throw new Error(result.message || 'Gagal mengirim data');
       }
 
       setModalMessage('Terimakasih, anda akan di hubungi oleh Admin');
       setShowSuccessModal(true);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Submit error:', error);
-      setModalMessage(error.message || 'Terjadi kesalahan saat mengirim data');
+      const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan saat mengirim data';
+      setModalMessage(errorMessage);
       setShowErrorModal(true);
     } finally {
       setIsLoading(false);
@@ -379,7 +389,6 @@ export default function CreditForm() {
       )}
       
       <main className="overflow-hidden">
-        {/* ... (kode JSX selanjutnya tetap sama persis) */}
         <section>
           <div className="min-h-screen flex items-center justify-center bg-white px-4">
             {step === 'form' && (
@@ -523,7 +532,6 @@ export default function CreditForm() {
                             ...prev,
                             userChoice: service.value
                           }))
-                          // Clear error when selecting
                           setErrors(prev => ({ ...prev, userChoice: '' }))
                         }}
                         className={`
@@ -593,7 +601,6 @@ export default function CreditForm() {
                             ...prev,
                             userJaminan: jaminan.value
                           }))
-                          // Clear error when selecting
                           setErrors(prev => ({ ...prev, userJaminan: '' }))
                         }}
                         className={`
@@ -638,8 +645,9 @@ export default function CreditForm() {
                 <Button
                   type="button"
                   onClick={handleBack}
+                  disabled={isLoading}
                   variant="outline"
-                  className="w-full text-base mb-8 sm:text-lg py-4 sm:py-6 rounded-2xl font-bold shadow-[0_4px_0_0_theme(colors.gray.300),0_8px_20px_theme(colors.gray.300/0.25)] hover:shadow-[0_6px_0_0_theme(colors.gray.400),0_10px_25px_theme(colors.gray.300/0.3)] hover:bg-gray-50 active:shadow-[0_2px_0_0_theme(colors.gray.300),0_4px_10px_theme(colors.gray.300/0.2)] active:translate-y-0.5 transform transition-all duration-150 dark:shadow-[0_4px_0_0_theme(colors.gray.600),0_8px_20px_theme(colors.gray.700/0.25)] dark:hover:shadow-[0_6px_0_0_theme(colors.gray.500),0_10px_25px_theme(colors.gray.700/0.3)] dark:hover:bg-gray-800 cursor-pointer"
+                  className="w-full text-base mb-8 sm:text-lg py-4 sm:py-6 rounded-2xl font-bold shadow-[0_4px_0_0_theme(colors.gray.300),0_8px_20px_theme(colors.gray.300/0.25)] hover:shadow-[0_6px_0_0_theme(colors.gray.400),0_10px_25px_theme(colors.gray.300/0.3)] hover:bg-gray-50 active:shadow-[0_2px_0_0_theme(colors.gray.300),0_4px_10px_theme(colors.gray.300/0.2)] active:translate-y-0.5 transform transition-all duration-150 dark:shadow-[0_4px_0_0_theme(colors.gray.600),0_8px_20px_theme(colors.gray.700/0.25)] dark:hover:shadow-[0_6px_0_0_theme(colors.gray.500),0_10px_25px_theme(colors.gray.700/0.3)] dark:hover:bg-gray-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Back
                 </Button>
