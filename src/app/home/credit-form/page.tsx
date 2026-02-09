@@ -96,31 +96,35 @@ const LoadingOverlay = ({ message }: { message: string }) => {
 
 export default function CreditForm() {
   const creditOptions = [
-    {
-      value: 'KREDIT_PRODUKTIF',
-      label: 'Kredit Produktif',
-      description: 'Untuk kebutuhan usaha',
-      icon: <Image src="/services-1.svg" alt="illustration" width={100} height={100} className="w-12 h-12 text-blue-500 mx-auto" />,
-    },
-    {
-      value: 'MULTIGUNA',
-      label: 'Kredit Multiguna',
-      description: 'Untuk kebutuhan pribadi',
-      icon: <Image src="/services-2.svg" alt="illustration" width={100} height={100} className="w-12 h-12 text-blue-500 mx-auto" />,
-    },
-    {
-      value: 'KPR',
-      label: 'KPR',
-      description: 'Kredit Pemilikan Rumah',
-      icon: <Image src="/services-3.svg" alt="illustration" width={100} height={100} className="w-12 h-12 text-blue-500 mx-auto" />,
-    },
-    {
-      value: 'PENSIUN',
-      label: 'Dana Pensiun',
-      description: 'Kredit untuk pensiunan',
-      icon: <Image src="/services-4.svg" alt="illustration" width={100} height={100} className="w-12 h-12 text-blue-500 mx-auto" />,
-    }
-  ]
+  {
+    value: 'KREDIT_PRODUKTIF',
+    label: 'Kredit Produktif',
+    description: 'Untuk kebutuhan usaha',
+    icon: <Image src="/services-1.svg" alt="illustration" width={100} height={100} className="w-12 h-12 mx-auto" />,
+    disabled: false,
+  },
+  {
+    value: 'MULTIGUNA',
+    label: 'Kredit Multiguna',
+    description: 'Untuk kebutuhan pribadi',
+    icon: <Image src="/services-2.svg" alt="illustration" width={100} height={100} className="w-12 h-12 mx-auto" />,
+    disabled: false,
+  },
+  {
+    value: 'KPR',
+    label: 'KPR',
+    description: 'Kredit Pemilikan Rumah',
+    icon: <Image src="/services-3.svg" alt="illustration" width={100} height={100} className="w-12 h-12 mx-auto" />,
+    disabled: false,
+  },
+  {
+    value: 'PENSIUN',
+    label: 'Dana Pensiun',
+    description: 'Kredit untuk pensiunan',
+    icon: <Image src="/services-4.svg" alt="illustration" width={100} height={100} className="w-12 h-12 mx-auto" />,
+    disabled: true,
+  },
+]
 
   const jaminanOptions = [
     {
@@ -520,34 +524,48 @@ export default function CreditForm() {
                   </h1>
                 </div>
                 <div className="mb-8 max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10 px-4 sm:px-6">
-                  {creditOptions.map((service, index) => {
-                    const selected = formData.userChoice === service.value
+  {creditOptions.map((service, index) => {
+    const selected = formData.userChoice === service.value
+    const isDisabled = service.disabled
 
-                    return (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => {
-                          setFormData(prev => ({
-                            ...prev,
-                            userChoice: service.value
-                          }))
-                          setErrors(prev => ({ ...prev, userChoice: '' }))
-                        }}
-                        className={`
-                          bg-white rounded-2xl p-6 sm:p-10 text-center transition-all border-2
-                          ${selected
-                            ? 'border-blue-500 shadow-xl ring-2 ring-blue-500'
-                            : 'border-transparent shadow-md hover:shadow-xl hover:border-blue-300'}
-                        `}
-                      >
-                        <div className="flex justify-center">{service.icon}</div>
-                        <h3 className="text-xl font-bold mt-4">{service.label}</h3>
-                        <p className="text-gray-600 mt-2">{service.description}</p>
-                      </button>
-                    )
-                  })}
-                </div>
+    return (
+      <button
+        key={index}
+        type="button"
+        disabled={isDisabled}
+        onClick={() => {
+          if (isDisabled) return
+
+          setFormData(prev => ({
+            ...prev,
+            userChoice: service.value
+          }))
+          setErrors(prev => ({ ...prev, userChoice: '' }))
+        }}
+        className={`
+          rounded-2xl p-6 sm:p-10 text-center transition-all border-2
+          ${
+            isDisabled
+              ? 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed'
+              : selected
+              ? 'bg-white border-blue-500 shadow-xl ring-2 ring-blue-500'
+              : 'bg-white border-transparent shadow-md hover:shadow-xl hover:border-blue-300'
+          }
+        `}
+      >
+        <div className={`flex justify-center ${isDisabled ? 'opacity-40' : ''}`}>
+          {service.icon}
+        </div>
+
+        <h3 className="text-xl font-bold mt-4">{service.label}</h3>
+        <p className="mt-2 text-sm">
+          {isDisabled ? 'Under Maintenance' : service.description}
+        </p>
+      </button>
+    )
+  })}
+</div>
+
 
                 {errors.userChoice && (
                   <p className="text-red-500 text-sm text-center">{errors.userChoice}</p>

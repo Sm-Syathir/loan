@@ -281,34 +281,48 @@ export default function RegisterPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     {[
-                      { label: "Agent", value: "agent" },
-                      { label: "Nasabah", value: "nasabah" },
-                    ].map((option) => {
-                      const selected = formData.userType === option.value;
+  { label: "Agent", value: "agent", disabled: true },
+  { label: "Nasabah", value: "nasabah", disabled: false },
+].map((option) => {
+  const selected = formData.userType === option.value;
+  const isDisabled = option.disabled;
 
-                      return (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              userType: option.value,
-                            }))
-                          }
-                          className={`
-                            rounded-2xl border-2 px-4 py-4 font-semibold transition-all
-                            ${
-                              selected
-                                ? "border-blue-500 ring-2 ring-blue-500 bg-blue-50"
-                                : "border-gray-300 hover:border-blue-300"
-                            }
-                          `}
-                        >
-                          {option.label}
-                        </button>
-                      );
-                    })}
+  return (
+    <button
+      key={option.value}
+      type="button"
+      disabled={isDisabled}
+      onClick={() => {
+        if (isDisabled) return;
+
+        setFormData((prev) => ({
+          ...prev,
+          userType: option.value,
+        }));
+      }}
+      className={`
+        rounded-2xl border-2 px-4 py-4 font-semibold transition-all
+        ${
+          isDisabled
+            ? "border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed"
+            : selected
+            ? "border-blue-500 ring-2 ring-blue-500 bg-blue-50"
+            : "border-gray-300 hover:border-blue-300"
+        }
+      `}
+    >
+      <div className="flex flex-col items-center">
+        <span>{option.label}</span>
+        {isDisabled && (
+          <span className="text-xs mt-1 text-gray-500">
+            Under Maintenance
+          </span>
+        )}
+      </div>
+    </button>
+  );
+})}
+
                   </div>
 
                   {errors.userType && (
