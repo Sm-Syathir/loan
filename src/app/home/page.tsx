@@ -16,15 +16,15 @@ import { useEffect, useState } from "react"
 // daftar logo teknologi
 const techLogos = [
   {
-    node: <img src="under maintencance.png" alt="MOFI" className="h-18" />,
+    node: <img src="Satufin.png" alt="MOFI" className="h-18" />,
     title: "MOFI",
   },
   {
-    node: <img src="under maintencance.png" alt="MOFI" className="h-18" />,
+    node: <img src="Satufin.png" alt="MOFI" className="h-18" />,
     title: "CIMB Niaga",
   },
   {
-    node: <img src="under maintencance.png" alt="MOFI" className="h-18" />,
+    node: <img src="Satufin.png" alt="MOFI" className="h-18" />,
     title: "KB Bank",
   },  
 ];
