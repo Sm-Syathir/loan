@@ -1,4 +1,4 @@
-name: Deploy Frontend to Hostinger
+name: Deploy NextJS Node App to Hostinger
 
 on:
   push:
@@ -20,27 +20,26 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build
+      - name: Build Next.js
         run: npm run build
 
-      # cek apakah folder out ada
-      - name: Check build files
-        run: ls -la
-
-      - name: Check out folder
-        run: ls -la out
-
-      - name: Deploy via FTP
+      - name: Deploy to Hostinger NodeJS folder
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
-          local-dir: ./out/
-          server-dir: /home/u719202173/domains/satufin.id/public_html/
+          local-dir: ./
+          server-dir: /home/u719202173/domains/satufin.id/nodejs/
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             **/.env*
+            **/out/**
+            **/.next/cache/**
+
+      - name: Restart NodeJS App
+        run: |
+          echo "restart" > restart.txt
