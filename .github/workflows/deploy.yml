@@ -23,6 +23,13 @@ jobs:
       - name: Build
         run: npm run build
 
+      # cek apakah folder out ada
+      - name: Check build files
+        run: ls -la
+
+      - name: Check out folder
+        run: ls -la out
+
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
