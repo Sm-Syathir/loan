@@ -30,7 +30,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
           local-dir: ./
-          server-dir: /home/u719202173/domains/satufin.id/public_html/
+          server-dir: /home/u719202173/domains/satufin.id/nodejs/
           exclude: |
             **/.git*
             **/.git*/**
