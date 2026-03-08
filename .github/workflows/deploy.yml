@@ -8,13 +8,14 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '24'
+          node-version: '20'
 
       - name: Install dependencies
         run: npm install
@@ -29,8 +30,8 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
-          local-dir: ./
-          server-dir: /home/u719202173/domains/satufin.id/nodejs/
+          local-dir: ./out/
+          server-dir: /home/u719202173/domains/satufin.id/public_html/
           exclude: |
             **/.git*
             **/.git*/**
